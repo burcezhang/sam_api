@@ -1,0 +1,26 @@
+			<div id="toolbar_index" class="toolbar_icon">
+				<a href="{:U('Inventory/index')}"><img src="__PUBLIC__/images/toolbar_icon_import.png" /></a>
+				<div>{:L('lb_toolbar_index')}</div>
+			</div>
+			<div id="toolbar_deliver" class="toolbar_icon">
+				<a href="{:U('Inventory/deliver')}"><img src="__PUBLIC__/images/toolbar_icon_deliver.png" /></a>
+				<div>{:L('lb_toolbar_deliver')}</div>
+			</div>
+			<div id="toolbar_stock" class="toolbar_icon">
+				<a href="{:U('Inventory/stock')}"><img src="__PUBLIC__/images/toolbar_icon_stock.png" /></a>
+				<div>{:L('lb_toolbar_stock')}</div>
+			</div>
+			<div id="toolbar_analyse" class="toolbar_icon">
+				<a href="{:U('Inventory/analyse')}"><img src="__PUBLIC__/images/toolbar_icon_user_analyse.png" /></a>
+				<div>{:L('lb_toolbar_analyse')}</div>
+			</div>
+			<!--
+			<div id="toolbar_setpwd" class="toolbar_icon">
+				<a href="{:U('Inventory/setpwd')}"><img src="__PUBLIC__/images/toolbar_icon_setting.png" /></a>
+				<div>{:L('lb_toolbar_setting')}</div>
+			</div>
+			-->
+			<script type="text/javascript">
+			var action_name='{$Think.ACTION_NAME}';
+			$('#toolbar_'+action_name).addClass('toolbar_icon_hover');
+			</script>

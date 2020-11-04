@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>{:L('common_web_title')}</title>
+<meta http-equiv="refresh" content="2; url={:U('Index/index')}" />
+
+<link href="__PUBLIC__/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+<script src="__PUBLIC__/js/jquery-1.7.2.min.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/jquery.cookie.js" type="text/javascript"></script>
+
+</head>
+
+<body scroll="no">
+<div class="clear" style="font-size:14px;text-align:left;margin:5px;">{:L('lb_logout_prompt')}......</div>
+
+
+<!--  play audio start  -->
+<script src="__PUBLIC__/audio/mediaelement-and-player.min.js" type="text/javascript"></script>
+<link href="__PUBLIC__/audio/mediaelementplayer.min.css" rel="stylesheet" />
+
+<div style="display:none;">
+<audio id="player2" src="{$player.logout|default='__PUBLIC__/audio/audio_logout.wav'}" type="audio/mp3" controls="controls"></audio>
+</div>
+<script type="text/javascript">
+var player = new MediaElementPlayer('#player2');
+player.play();
+//player.pause();
+//player.setSrc('mynewfile.mp4');
+function playit(){
+	player.play();
+}
+function pauseit(){
+	player.pause();
+}
+</script>
+<!--  play audio end  -->
+
+
+</body>
+</html>

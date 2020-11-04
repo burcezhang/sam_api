@@ -1,0 +1,654 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript" src="__PUBLIC__/js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="__PUBLIC__/layer/layer.min.js"></script>
+	<if condition="$default_map_dj == 2 ">
+		<script src="https://maps.googleapis.com/maps/api/js?key={:C('GOOGLE_AK')}" async defer></script>
+		<else />
+		<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak={:C('BAIDU_AK')}"></script>
+	</if>
+<script type="text/javascript" src="__PUBLIC__/js/convertor.js"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+var popup_action_box_show = false;
+var popup_alert_tel_code = '';
+var user_online_status = '{$userstate}';
+function resize(){
+	var size = parent.getBrowerSize();
+	$('#wrap').width(size.width);
+	$('#wrap').height(size.height);
+	$('.videoListTable').width(size.width);
+	$('.videoListTable').height(size.height);
+	$('#allmap').width(size.width);
+	$('#allmap').height(size.height);
+	$('.content_right').height(size.height-12);
+}
+$(document).ready(function(e) {
+    //var str=[];
+    //str.push('{:L("common_ALL_POSTION")}：<a href="javascript:void(0);" >{:L("common_ALL_HOME")}</a> 》');
+    //if(parent.bread.name)str.push('<a href="javascript:void(0);" class="cBlue">'+parent.bread.name+'</a> 》');
+   // str.push('<a href="javascript:void(0);" class="cBlue">'+parent.bread.title+'</a>');
+   
+	
+   // $('#bread').html(str.join(""));
+		
+	getAlertList();
+	dropAlertBox();
+	getWeather();
+	
+	$(".header_userinfo").hover(function(){
+		$(".header_userinfo_select").show();
+	},function(){
+		$(".header_userinfo_select").hide();
+	});
+	resize();
+
+	if ( {$default_map_dj}=='2' )
+		initGoogleMap();
+	else
+		initBaiduMap({:C('BAIDU_INIT_LON')},{:C('BAIDU_INIT_LAT')});
+});
+function setState(s1,p,s2){
+	setUserState(s1,true);
+	phone&&phone.setBusy(p,s2);
+}
+$(window).bind("resize",function(){resize();});
+function getAlertList(){	
+	$.post("{:U('Operator/getAlertList')}",{userstate:'{$userstate}'},function(returnData){
+		$('#alert_level_1').html('');
+		$('#alert_level_2').html('');
+		$('#alert_level_3').html('');
+		$('#alert_level_4').html('');
+		//alert(returnData);
+		var level1_no=1;var level2_no=1;var level3_no=1;var level4_no=1;
+		var device_sn_list = '0';
+		if(returnData==null || returnData=="null"){
+		}else{			
+			for(var i=0;i<returnData.length;i++){
+				switch(returnData[i].alert_level){
+				case 1:
+					if(level1_no>5)break;
+					$('#alert_level_1').append(getAlertListHtml(level1_no,returnData[i]));
+					device_sn_list += ',' + returnData[i].device_sn;
+					level1_no++;
+				break;
+				case 2:
+					if(level2_no>5)break;
+					$('#alert_level_2').append(getAlertListHtml(level2_no,returnData[i]));
+					level2_no++;
+				break;
+				case 3:
+					if(level3_no>5)break;
+					$('#alert_level_3').append(getAlertListHtml(level3_no,returnData[i]));
+					level3_no++;
+				break;
+				case 4:
+					if(level4_no>5)break;
+					$('#alert_level_4').append(getAlertListHtml(level4_no,returnData[i]));
+					level4_no++;
+				break;
+				}
+			}
+			if(user_online_status==1){getAlertOne(0);}			
+		}
+		$.post("{:U('Operator/getCallList')}",{device_sn:device_sn_list},function(reData){
+			if(reData==null || reData=="null"){
+			}else{
+				for(var i=0;i<reData.length;i++){
+					$('#alert_level_1').append(getCallListHtml(level1_no,reData[i]));
+					level1_no++;
+				}
+			}
+		});
+	});	
+	setTimeout("getAlertList()",5000);
+}
+function getAlertListHtml(sno,sinfo){
+	var sLink='<a href="javascript:void(0);">';
+	if(sinfo.alert_level>0){
+		sLink='<a href="javascript:void(0);" onclick="javascript:getAlertOne('+sinfo.id+');">';
+	}
+	var sHtml=sLink+'<div class="leftbar_row_content">' +
+			'			<div class="leftbar_row_td1">'+sno+'</div>' +
+			'			<div class="leftbar_row_td2">'+sinfo.elderly_name+'</div>' +
+			'			<div class="leftbar_row_td3">'+sinfo.alert_date+'</div>' +
+			'</div></a>';
+	return sHtml;
+}
+function getCallListHtml(sno,sinfo){
+	var sLink='<a href="javascript:void(0);">';
+	if(sinfo.alert_level>0){
+		sLink='<a href="javascript:void(0);" onclick="javascript:getAlertOne('+sinfo.id+');">';
+	}
+	var sHtml=sLink+'<div class="leftbar_row_content">' +
+			'			<div class="leftbar_row_td1">'+sno+'</div>' +
+			'			<div class="leftbar_row_td2">*'+sinfo.elderly_name+'*</div>' +
+			'			<div class="leftbar_row_td3">'+sinfo.alert_date+'</div>' +
+			'</div></a>';
+	return sHtml;
+}
+
+function getAlertOne(alert_id){
+	if(popup_action_box_show==true){
+		return false;
+	}else{
+		$.post("{:U('Operator/getAlertOne')}",{alertid:alert_id},function(returnData){
+			if(returnData==null || returnData=="null"){
+			}else{
+				popup_action_box_show=true;
+				if(returnData.step>5){
+					closePopupBox();
+				}else if(returnData.step>=4){
+					getFinishBoxHtml(returnData.id);
+				}else{
+					//$('#popup_window_content').html(getAlertInfoHtml(returnData));
+					getAlertInfoHtml(returnData);
+				}
+alert("test---1");
+
+				var lat = returnData.protocol_data.LOC_INFO.LATITUDE;
+				var lng = returnData.protocol_data.LOC_INFO.LONGITUDE;
+
+				var geoc = new BMap.Geocoder();
+				BMap.Convertor.translate(new BMap.Point(returnData.protocol_data.LOC_INFO.LONGITUDE,returnData.protocol_data.LOC_INFO.LATITUDE),0,function(pt){
+					geoc.getLocation(pt, function(rs){
+						var addComp = rs.addressComponents;
+						$('.popup_gps_address').html(addComp.province + "," + addComp.city + "," + addComp.district + "," + addComp.street + "," + addComp.streetNumber);
+						$('.popup_120_tel_code').html(addComp.city);
+						$.post("{:U('Index/getCityInfoByCityName')}",{city_name:addComp.city},function(returnCityInfo){
+							if(returnCityInfo==null || returnCityInfo=='null'){}else{
+								popup_alert_tel_code = returnCityInfo.tel_code;
+								$('.popup_120_tel_code').html(addComp.city+'('+popup_alert_tel_code+')&nbsp;&nbsp;');
+							}
+						});
+						
+						$.post("{:U('Index/getBaiduWeather')}",{cityName:addComp.city},function(returnData){
+							if(returnData.error==0){
+								var sWeather = returnData.currentCity + '<br/>' + returnData.weather_data.weather + ' ' + returnData.weather_data.temperature;
+								$('.popup_action_box_bottom_info1').html(sWeather);
+							}
+						});
+						
+					});
+
+					if ( {$default_map_dj}=='2' )
+						initGoogleMap(lat, lng);
+					else
+						initBaiduMap(pt.lng,pt.lat,returnData.elderly_info.photo_src);
+				});
+
+			}
+		});
+	}
+}
+function getAlertInfoHtml(sinfo){
+	if(sinfo.alert_type=='SHOCK_ALERT_RPT'){playit();}
+	var sHistoryLink = '{:U("Operator/datalist")}';
+	var sAgedinfoLink = '{:U("Operator/aged_show")}';
+	var sHtml='<div id="popup_action_box" class="popup_action_box">' +
+			'	<div class="popup_action_box_header">' +
+			'		<div class="popup_action_box_title">'+getAlertTitle(sinfo.alert_level)+'('+sinfo.alert_type2+') '+sinfo.alert_date+'['+getGpsFixType(sinfo.protocol_data.LOC_INFO.FIX_TYPE)+']</div>' +
+			'		<div class="popup_action_box_close"><a href="javascript:void(0);" onclick="javascript:closePopupBox();">CLOSE</a></div>' +
+			'		<div class="popup_action_box_history"><a href="'+sHistoryLink+'">HISTORY</a></div>' +
+			'	</div>' +
+			'	<div class="popup_action_box_content">' +
+			'		<div class="popup_action_box_content_col">' +
+			'			<div class="popup_action_box_img"><a href="javascript:void(0);" onclick="javascript:openWindow2(\'100%\',\'100%\',\''+sAgedinfoLink+'?id='+sinfo.elderly_info.id+'\',\'none\',false);">'+getUserImg(sinfo.elderly_info.photo_src)+'</a></div>' +
+			'			<div class="popup_action_box_baseinfo">' +
+			'				<div class="popup_action_box_baseinfo_row">{:L("lb_popup_name")}：'+sinfo.elderly_info.elderly_name+'</div>' +
+			'				<div class="popup_action_box_baseinfo_row">{:L("lb_popup_sex")}：'+getSex(sinfo.elderly_info.sex)+'</div>' +
+			'				<div class="popup_action_box_baseinfo_row">{:L("lb_popup_age")}：'+sinfo.elderly_info.age+'</div>' +
+			'			</div>' +
+			'			<div class="popup_action_box_tel"><a href="javascript:void(0);" onclick="javascript:setCallStep('+sinfo.id+',1,'+sinfo.elderly_info.phone+');">{:L("lb_popup_tel1")}：'+sinfo.elderly_info.phone+'</a></div>' +
+			'			<div class="popup_action_box_tel"><a href="javascript:void(0);" onclick="javascript:setCallStep('+sinfo.id+',2,'+sinfo.monitor_list[0].phone+');">{:L("lb_popup_tel2")}：'+sinfo.monitor_list[0].phone+'</a></div>' +
+			'			<div class="popup_action_box_addr">{:L("lb_popup_addr")}：['+(sinfo.protocol_data.LOC_INFO.LONGITUDE).toFixed(6)+','+(sinfo.protocol_data.LOC_INFO.LATITUDE).toFixed(6)+']<span class="popup_gps_address"></span></div>' +
+			'		</div>' +
+			'		<div class="popup_action_box_content_col">' +
+			'			<div class="popup_action_box_setp_title">{:L("lb_popup_step_title")}</div>' +
+			'			<div id="call_step_1" class="'+getActionStepCss(sinfo.step,1)+'"><a id="call_step_1_link" href="javascript:void(0);" onclick="javascript:setCallStep('+sinfo.id+',1,'+sinfo.elderly_info.sim+');">{:L("lb_popup_step1")}</a></div>' +
+			'			<div id="call_step_2" class="'+getActionStepCss(sinfo.step,2)+'"><a id="call_step_2_link" href="javascript:void(0);" onclick="javascript:setCallStep('+sinfo.id+',2,'+sinfo.elderly_info.phone+');">{:L("lb_popup_step2")}</a>' +
+			'			</div>' +
+			'			<div id="call_step_3" class="'+getActionStepCss(sinfo.step,3)+'"><a id="call_step_3_link" href="javascript:void(0);" onclick="javascript:$(\'#popup_call_more_box\').show();">{:L("lb_popup_step3")}</a>' +
+			'				<div id="popup_call_more_box" class="popup_call_more_box">' +
+			'					<div class="popup_call_more_box_1" onclick="javascript:$(\'#popup_call_more_box\').hide();" alt="CLOSE" title="CLOSE">x&nbsp;&nbsp;</div>' +
+			'					<div class="popup_call_more_box_2">';
+			if(sinfo.monitor_list==null || sinfo.monitor_list=='null' || sinfo.monitor_list==''){}else{
+				for(var monitor_i=0;monitor_i<sinfo.monitor_list.length;monitor_i++){
+					sHtml+='<div class="popup_call_more_box_row"><a href="javascript:void(0);" onclick="javascript:setCallStep('+sinfo.id+',3,'+sinfo.monitor_list[monitor_i].phone+');$(\'#popup_call_more_box\').hide();">&nbsp;&nbsp;'+(monitor_i+1)+'.'+sinfo.monitor_list[monitor_i].name+'&nbsp;&nbsp;'+sinfo.monitor_list[monitor_i].phone+'</a></div>';
+				}
+			}
+			sHtml+='					</div>' +
+			'					<div class="popup_call_more_box_3" onclick="javascript:$(\'#popup_call_more_box\').hide();"></div>' +
+			'				</div>' +
+			'			</div>' +
+			'			<div id="call_step_4" class="'+getActionStepCss(sinfo.step,4)+'"><a href="javascript:void(0);" onclick="javascript:setCallStep('+sinfo.id+',4);">{:L("lb_popup_step4")}</a></div>' +
+			'		</div>' +
+			'	</div>' +
+			'	<div class="popup_action_box_bottom">' +
+			'		<div class="popup_action_box_bottom_info1">--</div>' +
+			'		<div class="popup_action_box_bottom_info2">'+sinfo.protocol_data.STEP+'</div>' +
+			'		<div class="popup_action_box_bottom_info3">'+sinfo.protocol_data.BATT+'%</div>' +
+			'	</div>' +
+			'</div>';
+	//return sHtml;
+	$('#popup_window_content').html(sHtml);
+	
+	sHtml = '<div id="popup_call_120_box" class="popup_call_more_box">' +
+			'					<div class="popup_call_more_box_1" onclick="javascript:$(\'#popup_call_120_box\').hide();" alt="CLOSE" title="CLOSE">x&nbsp;&nbsp;</div>' +
+			'					<div class="popup_call_more_box_2">';
+			
+			sHtml+='<div class="popup_call_more_box_row"><a href="javascript:void(0);" onclick="javascript:set_dialout_input_value(\''+sinfo.elderly_info.sim+'\',0);">{:L("lb_popup_step1")} '+sinfo.elderly_info.sim+'</a></div>';
+			sHtml+='<div class="popup_call_more_box_row"><a href="javascript:void(0);" onclick="javascript:set_dialout_input_value(\''+sinfo.elderly_info.phone+'\',0);">{:L("lb_popup_step2")} '+sinfo.elderly_info.phone+'</a></div>';
+			
+			if(sinfo.monitor_list==null || sinfo.monitor_list=='null' || sinfo.monitor_list==''){}else{
+				for(var monitor_i=0;monitor_i<sinfo.monitor_list.length;monitor_i++){
+					sHtml+='<div class="popup_call_more_box_row"><a href="javascript:void(0);" onclick="javascript:set_dialout_input_value(\''+sinfo.monitor_list[monitor_i].phone+'\',0);">{:L("lb_contact_monitor")} '+(monitor_i+1)+'.'+sinfo.monitor_list[monitor_i].name+'&nbsp;&nbsp;'+sinfo.monitor_list[monitor_i].phone+'</a></div>';
+				}
+			}
+			
+			sHtml+='<div class="popup_call_more_box_row"><a href="javascript:void(0);" onclick="javascript:set_dialout_input_value(\'120\',1);">{:L("lb_contact")}&nbsp;&nbsp;<span class="popup_120_tel_code"></span>120</a></div>';
+			sHtml+='<div class="popup_call_more_box_row"><a href="javascript:void(0);" onclick="javascript:set_dialout_input_value(\'119\',1);">{:L("lb_contact")}&nbsp;&nbsp;<span class="popup_120_tel_code"></span>119</a></div>';
+			sHtml+='<div class="popup_call_more_box_row"><a href="javascript:void(0);" onclick="javascript:set_dialout_input_value(\'110\',1);">{:L("lb_contact")}&nbsp;&nbsp;<span class="popup_120_tel_code"></span>110</a></div>';
+			sHtml+='			</div>' +
+			'					<div class="popup_call_more_box_3" onclick="javascript:$(\'#popup_call_120_box\').hide();"></div>' +
+			'</div>';
+	//alert(sHtml);
+	$('#icallcenter_dialout_input_box').html(sHtml);
+	
+	$('.popup_action_box_tel_action').css('display','');
+	$('#popup_window').css('left',$(window).width()/2-$('#popup_window_content').width()/2);
+	$('#popup_window').css('top',$(window).height()/2-$('#popup_window_content').height()/2-136);
+	
+	switch(sinfo.alert_type){
+		case 'EMERGENCY_CALL':
+		case 'SHOCK_ALERT_RPT':
+		case 'SNOOZE_ALERT_RPT':
+			//$('#call_step_1_link').removeAttr('onclick');$('#call_step_1_link').css('cursor','text');
+			$('#call_step_2_link').removeAttr('onclick');$('#call_step_2_link').css('cursor','text');
+			$('#call_step_3_link').removeAttr('onclick');$('#call_step_3_link').css('cursor','text');
+		break;
+		case 'GEOFENCE_ALERT_RPT':
+		case 'TEMPERATURE_ALERT_RPT':
+			$('#call_step_1_link').removeAttr('onclick');$('#call_step_1_link').css('cursor','text');
+			$('#call_step_2_link').removeAttr('onclick');$('#call_step_2_link').css('cursor','text');
+			//$('#call_step_3_link').removeAttr('onclick');$('#call_step_3_link').css('cursor','text');
+		break;
+		case 'LOW_BATTERY_ALERT_RPT':
+		case 'FULL_BATTERY_ALERT_RPT':
+		case 'DEV_PWR_OFF_RPT':
+		case 'DEV_PWR_ON_RPT':
+		case 'REMIND_ALERT':
+			$('#call_step_1_link').removeAttr('onclick');$('#call_step_1_link').css('cursor','text');
+			//$('#call_step_2_link').removeAttr('onclick');$('#call_step_2_link').css('cursor','text');
+			$('#call_step_3_link').removeAttr('onclick');$('#call_step_3_link').css('cursor','text');
+		break;		
+	}	
+}
+function set_dialout_input_value(tel_val,tel_type){
+	//alert($("[id='icallcenter.dialout.input']").val());
+	if(tel_type==1){
+		$('.icallcenter_dialout_input').attr('value',popup_alert_tel_code+''+tel_val);	
+		//$('input.fl').attr('value',popup_alert_tel_code+''+tel_val);
+		$("[id='softphone.input']").attr('value',popup_alert_tel_code+''+tel_val);
+	}else{
+		$('.icallcenter_dialout_input').attr('value',tel_val);
+		//$('input.fl').attr('value',tel_val);
+		$("[id='softphone.input']").attr('value',tel_val);
+	}
+	$('#popup_call_120_box').hide();
+}
+function setCallStep(alert_id,istep,call_no){
+	//alert(alert_id+','+istep+','+call_no);
+	switch(istep){
+		case 1:			
+		case 2:		
+		$.post("{:U('Operator/setCallStep')}",{alertid:alert_id,step:istep},function(returnData){
+		if(returnData==null || returnData=="null"){
+		}else{				
+			$('#call_step_'+istep).removeClass('popup_action_box_setp_row');
+			$('#call_step_'+istep).addClass('popup_action_box_setp_row_hover');
+			if(!isNaN(call_no)){
+				//alert(call_no);
+				//$('#icallcenter.dialout.input').attr('value',call_no);
+				softphoneBar.dialout(call_no);
+			}
+		}
+		});
+		break;
+		case 3:
+		$.post("{:U('Operator/setCallStep')}",{alertid:alert_id,step:istep},function(returnData){
+		if(returnData==null || returnData=="null"){
+		}else{
+			$('#call_step_'+istep).removeClass('popup_action_box_setp_row');
+			$('#call_step_'+istep).addClass('popup_action_box_setp_row_hover');
+			if(!isNaN(call_no)){
+				//$('#icallcenter.dialout.input').attr('value',popup_alert_tel_code+''+call_no);
+				call_no = popup_alert_tel_code+''+call_no;
+				//alert(call_no);
+				softphoneBar.dialout(call_no);
+			}
+		}
+		});
+		break;
+		case 4:
+		$.post("{:U('Operator/setCallStep')}",{alertid:alert_id,step:istep},function(returnData){
+		if(returnData==null || returnData=="null"){
+		}else{				
+			$('#call_step_'+istep).removeClass('popup_action_box_setp_row');
+			$('#call_step_'+istep).addClass('popup_action_box_setp_row_hover');
+			$('#popup_window_content').html(getFinishBoxHtml(alert_id));
+			$('.popup_action_box_tel_action').css('display','none');
+		}
+		});
+		break;
+	}		
+}
+function closePopupBox(){
+	$('#popup_window_content').html("&nbsp;");
+	popup_action_box_show=false;
+	$('.popup_action_box_tel_action').css('display','none');
+	$('.icallcenter_dialout_input').attr('value','');	
+}
+function getActionStepCss(step,step_no){
+	if(step>=step_no){
+		return 'popup_action_box_setp_row_hover';
+	}else{
+		return 'popup_action_box_setp_row';
+	}
+}
+function getGpsFixType(FixType){
+	switch(FixType){
+		case 0:
+			return "{:L('lb_fix_type0')}";
+		break;
+		case 1:
+			return "{:L('lb_fix_type1')}";
+		break;
+		case 2:
+			return "{:L('lb_fix_type2')}";
+		break;
+		case 3:
+			return "{:L('lb_fix_type3')}";
+		break;
+		case 4:
+			return "{:L('lb_fix_type4')}";
+		break;
+		case 5:
+			return "{:L('lb_fix_type5')}";
+		break;		
+	}
+}
+function getAlertTitle(alert_level){
+	switch(alert_level){
+		case 1:
+			return "{:L('lb_emergency_call')}";
+		break;
+		case 2:
+			return "{:L('lb_emergency_alert')}";
+		break;
+		case 3:
+			return "{:L('lb_non_emergency_alert')}";
+		break;
+		case 4:
+			return "{:L('lb_reminder_alert')}";
+		break;
+	}
+}
+function getSex(sex){
+	if(sex==1){
+		return "{:L('lb_popup_sex_value1')}";
+	}else{
+		return "{:L('lb_popup_sex_value0')}";
+	}
+}
+function getUserImg(imgsrc){
+	if(imgsrc.length>5){
+		return '<img src="'+imgsrc+'" width="80" height="80" />';
+	}else{
+		return '<img src="__PUBLIC__/images/pager_num_bg.png" width="80" height="80" />';
+	}
+}
+function selectSMS(smsid){
+	$('.popup_action_finish__row').removeClass('popup_action_finish_content_row_hover');
+	$('.popup_action_finish__row').removeClass('popup_action_finish_content_row');
+	$('.popup_action_finish__row').addClass('popup_action_finish_content_row');
+	$('#sms_'+smsid).addClass('popup_action_finish_content_row_hover');	
+	$('#t_select_sms_id').attr('value',smsid);
+}
+function setCallFinish(){
+	var alert_id=$('#t_alert_id').val();
+	var sms_id  =$('#t_select_sms_id').val();
+	if(sms_id=='' || sms_id==null || sms_id=='null'){
+		alert('{:L("lb_popup_task_finish_alert_choose_sms_template")}');
+		return false;
+	}else{
+		$.post("{:U('Operator/setCallStep')}",{alertid:alert_id,step:5,smsid:sms_id},function(returnData){
+			if(returnData==null || returnData=="null"){
+			}else{				
+				closePopupBox();
+				if(sms_id!=0){playit2();}
+			}
+		});
+	}
+}
+function getFinishBoxHtml(alert_id){
+	$.post("{:U('Operator/getSmsTemplate')}",{},function(returnData){
+		var sHtml='<div class="popup_action_finish_box">' +
+		'		<div class="popup_action_finish_title"><div class="">{:L("lb_popup_task_finish_title")}</div></div>' +
+		'		<div class="popup_action_finish_content">' +
+		'			<input type="hidden" id="t_select_sms_id" name="t_select_sms_id" value="" />' +
+		'			<input type="hidden" id="t_alert_id" name="t_alert_id" value="'+alert_id+'" />' +
+		'				<div id="sms_0" class="popup_action_finish__row popup_action_finish_content_row"><div onclick="javascript:selectSMS(0);">{:L("lb_not_send_sms_to_finish")}</div></div>';
+		if(returnData==null || returnData=="null"){
+		}else{				
+			for(var i=0;i<returnData.length;i++){				
+				sHtml+='<div id="sms_'+returnData[i].id+'" class="popup_action_finish__row popup_action_finish_content_row"><div onclick="javascript:selectSMS('+returnData[i].id+');">'+returnData[i].content+'</div></div>';
+			}
+		}	
+		sHtml+='		</div>' +
+		'		<div class="popup_action_finish_bottom"><a href="javascript:void(0);" onclick="javascript:setCallFinish();">{:L("lb_btn_finish")}</a></div>' +
+		'	</div>';
+		$('#popup_window_content').html(sHtml);
+	});
+}
+
+</script>
+<include file="Public:commjs" />
+<!-- 7x24 call -->
+<link href="__PUBLIC__/call7x24/css/pages_anycare.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/call7x24/js/icallcenter/global.js"></script>
+<script type="text/javascript" src="__PUBLIC__/call7x24/hojo/hojo.js" djConfig="isDebug:false, parseOnLoad:false"></script>
+<script type="text/javascript">
+    hojo.registerModulePath("icallcenter", "../js/icallcenter");
+    hojo.require("icallcenter.logon");
+    hojo.require("hojo.io.script");
+    hojo.addOnLoad(function () {
+		//var loginName = "{$userinfo.service_no}{:C('CALL7X24_DOMAIN')}";
+		var loginName = "{$userinfo.service_no}";
+        var password = "{$userinfo.service_pwd}";
+        var extenType = "{$userinfo.service_type}";
+		//var extenType = "{:C('CALL7X24_TYPE')}";
+        icallcenter.logon.startLogon(loginName, password, extenType);
+    });
+    hojo.addOnWindowUnload(function (){
+        if(phone) {
+            //phone.destroy(true);
+        }
+    });
+	setCallState();
+	
+	function setCallState(){
+		if(phone) {
+			var user_state = '{$userstate}';
+			switch(user_state){
+			case '1':
+				phone.setBusy(false,'0');
+			break;
+			case '2':
+				phone.setBusy(false,'2');
+			break;
+			case '3':
+				phone.setBusy(false,'1');
+			break;
+			}
+		}else{
+			//alert('....');
+			setTimeout("setCallState()",1000);
+		}
+	}
+</script>
+</head>
+<body>
+	<div id="wrap" class="videoList" style="padding:0;">
+		<div class="videoListTable">
+        <div id="allmap"></div>
+        
+        <div class="content_right">
+	<div class="header_userinfo"><div id="user_online_status" class="user_online_status_0{$userstate}"></div>{:L('lb_user_title')} : {$userinfo.service_no}
+	<div class="header_userinfo_select">
+	<div class="barBox" id="callStatus">						
+	<div class="softphone_timer">
+	<div id="softphonebar.peerState"></div>
+	<div id="softphonebar.peerTimeState" class="peerTimeState">00:00:00</div>
+	</div></div>
+	<div style="width:170px;height:70px;position:relative;">
+	<div class="barBox" id="peerStatus">
+	<div class="clear10">&nbsp;</div>
+	<div class="fl" style="width:5px;">&nbsp;</div>
+	<a href="javascript:void(0);" onClick="setState(1,false,0);" id="IdleEnable" class="IdleDisable" ></a>
+	<a href="javascript:void(0);" onClick="setState(1,false,0);" id="IdleDisable" class="IdleDisable" style="display: none"></a>
+	<a href="javascript:void(0);" id="RestEnable" class="RestDisable" style="display: none"></a>
+	<a href="javascript:void(0);" onClick="setState(2,true,2);" id="RestDisable" class="RestDisable" ></a>
+	<a href="javascript:void(0);" id="BusyEnable" class="BusyDisable" style="display: none"></a>
+	<a href="javascript:void(0);" onClick="setState(3,true,1);" id="BusyDisable" class="BusyDisable" ></a>
+	</div></div>
+	<div id="netMessage"></div>
+	<iframe id="icallcenter.iframe" style="display: none"></iframe>
+	</div>
+    </div>	
+           <table id="leftbar" border="0" cellpadding="0" cellspacing="0" width="100%" height="100%" class="">
+			<tr>
+				<td width="100%" height="25%" valign="top">
+					<div class="leftbar_title1"><div class="leftbar_head">{:L('lb_emergency_call')}</div></div>
+					<div class="leftbar_row_title">
+						<div class="leftbar_row_td1">{:L('lb_head_no')}</div>
+						<div class="leftbar_row_td2">{:L('lb_head_name')}</div>
+						<div class="leftbar_row_td3">{:L('lb_head_time')}</div>
+					</div>
+					<div id="alert_level_1"></div>
+					<!--<div class="leftbar_row_content">
+						<div class="leftbar_row_td1">1</div>
+						<div class="leftbar_row_td2">张三</div>
+						<div class="leftbar_row_td3">20141003/15:03</div>
+					</div>
+					-->
+				</td>
+			</tr>
+			<tr>
+				<td width="100%" height="25%" valign="top">
+					<div class="leftbar_title2"><div class="leftbar_head">{:L('lb_emergency_alert')}</div></div>
+					<div class="leftbar_row_title">
+						<div class="leftbar_row_td1">{:L('lb_head_no')}</div>
+						<div class="leftbar_row_td2">{:L('lb_head_name')}</div>
+						<div class="leftbar_row_td3">{:L('lb_head_time')}</div>
+					</div>
+					<div id="alert_level_2"></div>
+				</td>
+			</tr>
+			<tr>
+				<td width="100%" height="25%" valign="top">
+					<div class="leftbar_title3"><div class="leftbar_head">{:L('lb_non_emergency_alert')}</div></div>
+					<div class="leftbar_row_title">
+						<div class="leftbar_row_td1">{:L('lb_head_no')}</div>
+						<div class="leftbar_row_td2">{:L('lb_head_name')}</div>
+						<div class="leftbar_row_td3">{:L('lb_head_time')}</div>
+					</div>
+					<div id="alert_level_3"></div>
+				</td>
+			</tr>
+			<tr>
+				<td width="100%" height="25%" valign="top">
+					<div class="leftbar_title4"><div class="leftbar_head">{:L('lb_reminder_alert')}</div></div>
+					<div class="leftbar_row_title">
+						<div class="leftbar_row_td1">{:L('lb_head_no')}</div>
+						<div class="leftbar_row_td2">{:L('lb_head_name')}</div>
+						<div class="leftbar_row_td3">{:L('lb_head_time')}</div>
+					</div>
+					<div id="alert_level_4"></div>
+				</td>
+			</tr>
+			</table>
+	    </div>
+		</div>
+    </div>
+<iframe id="icallcenter.iframe" style="display: none"></iframe>
+<div id="popup_window" class="popup_window">
+	<div id="popup_window_title" class="popup_window_title"></div>
+	<div id="popup_window_content" class="popup_window_content"></div>
+	<div class="popup_action_box_tel_action" style="display:none;">
+		
+			<div style="width:180px;float:left;position:relative;">
+				<input type="text" id="icallcenter.dialout.input" value="输入手机号码" onFocus="if(value=='输入手机号码') {value=''}"  onblur="if(value==''){value='输入手机号码'}" style="" class="icallcenter_dialout_input" />
+				<div style="margin-top:8px;"><a href="javascript:void(0);" onclick="javascript:$('#popup_call_120_box').show();">{:L("lb_btn_show_tel_list")}</a></div>
+				<div id="icallcenter_dialout_input_box" style="text-align:left;text-indent:8px;"></div>
+			</div>
+			<div class="popup_action_box_tel_action_box">
+				<div id="softphonebar">
+							<!--<div class="clear10">&nbsp;</div>-->
+							<a href="#" class="DialEnable" id="DialEnable" onClick="softphoneBar.dialout(hojo.byId('icallcenter.dialout.input').value)"></a>
+							<a href="#" class="DialDisable" id="DialDisable" style="display: none"></a>
+							<a href="#" class="HangupEnable" id="HangupEnable" style="display: none" onClick="javascript:phone.hangup();"></a>
+							<a href="#" class="HangupDisable" id="HangupDisable"></a>
+							<!--<a href="#"  id="InvestigateEnable" style="display: none" onClick="javascript:phone.investigate();">转调查</a>-->
+							<!--<div class="clear5">&nbsp;</div>-->
+							<a href="#" class="HoldEnable" id="HoldEnable" style="display: none" onClick="phone.hold();"></a>
+							<a href="#" class="HoldDisable" id="HoldDisable" ></a>
+							<div class="clear5">&nbsp;</div>
+							<a href="#" class="HoldGetEnable" id="HoldGetEnable" style="display: none" onClick="phone.unhold();"></a>
+							<a href="#" class="TransferEnable" id="TransferEnable" style="display: none" onClick="javascript:softphoneBar.toTransfer();"></a>
+							<a href="#" class="TransferDisable" id="TransferDisable" ></a>
+							<a href="#" class="TransferEnable" id="ConsultTransferEnable" style="display: none" onClick="javascript:phone.transfer('912345','external', {})"></a> 
+							<a href="#" class="TransferDisable" id="ConsultTransferDisable" style="display: none"></a>
+							<!--<div class="clear5">&nbsp;</div>-->
+							<a href="#" class="ConsultEnable" id="ConsultEnable" style="display: none" onClick="javascript:softphoneBar.toConsult();"></a> 
+							<a href="#" class="ConsultDisable" id="ConsultDisable" ></a>
+							<a href="#" class="StopConsultEnable" id="StopConsultEnable" style="display: none" onClick="javascript:phone.stopConsult();"></a> 
+							<a href="#" class="ThreeWayCallEnable" id="ThreeWayCallEnable" style="display: none" onClick="javascript:softphoneBar.toThreeWayCall();"></a> 
+							<a href="#" class="ThreeWayCallDisable" id="ThreeWayCallDisable"></a>
+							<a href="#" class="ThreeWayCallEnable" id="ConsultThreeWayCallEnable" style="display: none" onClick="javascript:phone.threeWayCall('912345')"></a>
+							<a href="#" class="ThreeWayCallDisable" id="ConsultThreeWayCallDisable" style="display: none"></a>
+				</div>
+			</div>
+		
+	</div>
+</div>
+<!--  play audio start  -->
+<script src="__PUBLIC__/audio/mediaelement-and-player.min.js" type="text/javascript"></script>
+<link href="__PUBLIC__/audio/mediaelementplayer.min.css" rel="stylesheet" />
+
+<div style="display:none;">
+<audio id="player2" src="{$player.sms|default='__PUBLIC__/audio/audio_sms.wav'}" type="audio/mp3" controls></audio>
+<audio id="player1" src="{$player.ringout|default='__PUBLIC__/audio/audio_ringout.wav'}" type="audio/mp3" controls></audio>
+</div>
+<script type="text/javascript">
+var player1 = new MediaElementPlayer('#player1');
+var player2 = new MediaElementPlayer('#player2');
+
+function playit(){player1.play();}
+function pauseit(){player1.pause();}
+
+function playit2(){player2.play();}
+function pauseit2(){player2.pause();}
+</script>
+</body>
+</html>

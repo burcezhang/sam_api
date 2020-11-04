@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<div class="editBar" style="position:absolute; right:0; bottom:-5px;">');
+    str.push('<a href="javascript:void(0);" title="{:L("common_ALL_RETURN")}" onclick="Result();" class="iBack">{:L("common_ALL_RETURN")}</a>');
+    str.push('<a href="javascript:void(0);" title=">{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a></div>');
+    $('#bread').html(str.join(""));
+	
+	if('{$set}'=='audio'){
+		initValue();
+	}
+	
+	$('#frmReg').submit(function() {
+        if(chkFrmReg()==true){
+			mfSubmit();
+		}
+        return false;
+    });
+});
+function mfSubmit(){
+	$.ajax({
+		cache: true,
+		type: "POST",
+		url:"{:U('Admin/audio_set')}",
+		data:$('#frmReg').serialize(),// 你的formid
+		async: false,
+		error: function(request) {
+			alert("Connection error");
+		},
+		success: function(data) {
+			if(data.error==0){
+				alert('{:L("alert_set_success")}');
+				window.location.href=window.location.href;
+			}else{
+				alert('{:L("alert_set_failed")}');
+			}
+		}
+	});	
+}
+
+function chkFrmReg(){return true;}
+function initValue(){
+	$('#audio_set_1_file').attr('value','{$audio_set_run.login.kfile}');
+	$('#audio_set_1_title').attr('value','{$audio_set_run.login.title}');
+	$('#audio_box_1_link').html('{$audio_set_run.login.title}');
+	
+	$('#audio_set_2_file').attr('value','{$audio_set_run.logout.kfile}');
+	$('#audio_set_2_title').attr('value','{$audio_set_run.logout.title}');
+	$('#audio_box_2_link').html('{$audio_set_run.logout.title}');
+	
+	$('#audio_set_3_file').attr('value','{$audio_set_run.ringout.kfile}');
+	$('#audio_set_3_title').attr('value','{$audio_set_run.ringout.title}');
+	$('#audio_box_3_link').html('{$audio_set_run.ringout.title}');
+	
+	$('#audio_set_4_file').attr('value','{$audio_set_run.sms.kfile}');
+	$('#audio_set_4_title').attr('value','{$audio_set_run.sms.title}');
+	$('#audio_box_4_link').html('{$audio_set_run.sms.title}');
+}
+function setDefault(){
+	$('#audio_set_1_file').attr('value','{$audio_set_def.login.kfile}');
+	$('#audio_set_1_title').attr('value','{$audio_set_def.login.title}');
+	$('#audio_box_1_link').html('{$audio_set_def.login.title}');
+	
+	$('#audio_set_2_file').attr('value','{$audio_set_def.logout.kfile}');
+	$('#audio_set_2_title').attr('value','{$audio_set_def.logout.title}');
+	$('#audio_box_2_link').html('{$audio_set_def.logout.title}');
+	
+	$('#audio_set_3_file').attr('value','{$audio_set_def.ringout.kfile}');
+	$('#audio_set_3_title').attr('value','{$audio_set_def.ringout.title}');
+	$('#audio_box_3_link').html('{$audio_set_def.ringout.title}');
+	
+	$('#audio_set_4_file').attr('value','{$audio_set_def.sms.kfile}');
+	$('#audio_set_4_title').attr('value','{$audio_set_def.sms.title}');
+	$('#audio_box_4_link').html('{$audio_set_def.sms.title}');
+}
+function setAllNone(){
+	select_audio(1,'{:L("lb_audio_none")}','none');
+	select_audio(2,'{:L("lb_audio_none")}','none');
+	select_audio(3,'{:L("lb_audio_none")}','none');
+	select_audio(4,'{:L("lb_audio_none")}','none');
+}
+function show_audio_box_select(box_no){
+	$('.audio_box_select').css('display','none');
+	$('#audio_box_'+box_no).css('display','');
+	
+	$('.audio_box').css('z-index','2');
+	$('.audio_box'+box_no).css('z-index','100');
+}
+function select_audio(box_no,audio_title,audio_file){
+	$('#audio_set_'+box_no+'_file').attr('value',audio_file);
+	$('#audio_set_'+box_no+'_title').attr('value',audio_title);
+	$('#audio_box_'+box_no+'_link').html(audio_title);
+	$('.audio_box_select').css('display','none');
+}
+</script>
+</head>
+<body>
+	<div id="wrap" class="videoList">
+            <div class="crumbs mb5" id="bread" style="position:relative;"></div>
+<div class="edit">
+  <div class="editContent">
+  	<form id="frmReg" method="post" action="{:U('Admin/audio_set')}">
+      <table width="100%" >
+        <tbody>
+          <tr class="bg">
+            <th width="150" align="left"><b>{:L("lb_list_title_event")}</b></th>
+            <th align="left"><b>{:L("lb_list_title_audio")}</b></th>
+          </tr>
+          <tr>
+            <td class="datalist">{:L("lb_event_login")}</td>
+            <td align="left" class="datalist"><div class="audio_box audio_box1">
+              <input type="hidden" id="audio_set_1_file" name="audio_set[login][kfile]" />
+              <input type="hidden" id="audio_set_1_title" name="audio_set[login][title]" />
+              <a id="audio_box_1_link" href="javascript:void(0);" onclick="javascript:show_audio_box_select(1);">{:L("lb_audio_none")}</a>
+              <div id="audio_box_1" class="audio_box_select" style="display:none;">
+                <volist id="vo" name="audio_list1">
+                  <div class="select_row"><a href="javascript:void(0);" onclick="javascript:select_audio(1,'{$vo.title}','{$vo.kfile}');">{$vo.title}</a><span><a href="javascript:void(0);" onclick="javascript:playit('{$vo.kfile}');"><img src="__PUBLIC__/images/arrow_play.png" style="margin-top:3px;" /></a></span></div>
+                </volist>
+                <div class="select_row_last"><a href="javascript:void(0);" onclick="javascript:select_audio(1,'{:L("lb_audio_none")}','none');">{:L("lb_audio_none")}</a><span><a href="javascript:void(0);" onclick="javascript:select_audio(0,'--','--');"><img src="__PUBLIC__/images/arrow_up.png" style="margin-top:4px;" /></a></span></div>
+              </div>
+            </div></td>
+          </tr>
+          <tr>
+            <td class="datalist">{:L("lb_event_logout")}</td>
+            <td align="left" class="datalist"><div class="audio_box audio_box2">
+              <input type="hidden" id="audio_set_2_file" name="audio_set[logout][kfile]" />
+              <input type="hidden" id="audio_set_2_title" name="audio_set[logout][title]" />
+              <a id="audio_box_2_link" href="javascript:void(0);" onclick="javascript:show_audio_box_select(2);">{:L("lb_audio_none")}</a>
+              <div id="audio_box_2" class="audio_box_select" style="display:none;">
+                <volist id="vo" name="audio_list2">
+                  <div class="select_row"><a href="javascript:void(0);" onclick="javascript:select_audio(2,'{$vo.title}','{$vo.kfile}');">{$vo.title}</a><span><a href="javascript:void(0);" onclick="javascript:playit('{$vo.kfile}');"><img src="__PUBLIC__/images/arrow_play.png" style="margin-top:3px;" /></a></span></div>
+                </volist>
+                <div class="select_row_last"><a href="javascript:void(0);" onclick="javascript:select_audio(2,'{:L("lb_audio_none")}','none');">{:L("lb_audio_none")}</a><span><a href="javascript:void(0);" onclick="javascript:select_audio(0,'--','--');"><img src="__PUBLIC__/images/arrow_up.png" style="margin-top:4px;" /></a></span></div>
+              </div>
+            </div></td>
+          </tr>
+          <tr>
+            <td class="datalist">{:L("lb_event_alert")}</td>
+            <td align="left" class="datalist"><div class="audio_box audio_box3">
+              <input type="hidden" id="audio_set_3_file" name="audio_set[ringout][kfile]" />
+              <input type="hidden" id="audio_set_3_title" name="audio_set[ringout][title]" />
+              <a id="audio_box_3_link" href="javascript:void(0);" onclick="javascript:show_audio_box_select(3);">{:L("lb_audio_none")}</a>
+              <div id="audio_box_3" class="audio_box_select" style="display:none;">
+                <volist id="vo" name="audio_list3">
+                  <div class="select_row"><a href="javascript:void(0);" onclick="javascript:select_audio(3,'{$vo.title}','{$vo.kfile}');">{$vo.title}</a><span><a href="javascript:void(0);" onclick="javascript:playit('{$vo.kfile}');"><img src="__PUBLIC__/images/arrow_play.png" style="margin-top:3px;" /></a></span></div>
+                </volist>
+                <div class="select_row_last"><a href="javascript:void(0);" onclick="javascript:select_audio(3,'{:L("lb_audio_none")}','none');">{:L("lb_audio_none")}</a><span><a href="javascript:void(0);" onclick="javascript:select_audio(0,'--','--');"><img src="__PUBLIC__/images/arrow_up.png" style="margin-top:4px;" /></a></span></div>
+              </div>
+            </div></td>
+          </tr>
+          <tr>
+            <td class="datalist">{:L("lb_event_sms")}</td>
+            <td align="left" class="datalist"><div class="audio_box audio_box4">
+              <input type="hidden" id="audio_set_4_file" name="audio_set[sms][kfile]" />
+              <input type="hidden" id="audio_set_4_title" name="audio_set[sms][title]" />
+              <a id="audio_box_4_link" href="javascript:void(0);" onclick="javascript:show_audio_box_select(4);">{:L("lb_audio_none")}</a>
+              <div id="audio_box_4" class="audio_box_select" style="display:none;">
+                <volist id="vo" name="audio_list4">
+                  <div class="select_row"><a href="javascript:void(0);" onclick="javascript:select_audio(4,'{$vo.title}','{$vo.kfile}');">{$vo.title}</a><span><a href="javascript:void(0);" onclick="javascript:playit('{$vo.kfile}');"><img src="__PUBLIC__/images/arrow_play.png" style="margin-top:3px;" /></a></span></div>
+                </volist>
+                <div class="select_row_last"><a href="javascript:void(0);" onclick="javascript:select_audio(4,'{:L("lb_audio_none")}','none');">{:L("lb_audio_none")}</a><span><a href="javascript:void(0);" onclick="javascript:select_audio(0,'--','--');"><img src="__PUBLIC__/images/arrow_up.png" style="margin-top:4px;" /></a></span></div>
+              </div>
+            </div></td>
+          </tr>
+          <tr>
+            <td class="bd pd">&nbsp;</td>
+            <td class="bd pd">&nbsp;</td>
+          </tr>
+          <tr>
+            <td class="bd pd"><div class="btn6 float_left"><a href="javascript:void(0);" onclick="javascript:setAllNone();">{:L("lb_btn_close_all")}</a></div></td>
+            <td align="left" class="bd pd"><div class="btn7"><a href="javascript:void(0);" onclick="javascript:setDefault();">{:L("lb_btn_to_default")}</a></div></td>
+          </tr>
+          <tr>
+            <td class="bd pd">&nbsp;</td>
+            <td class="bd pd">&nbsp;</td>
+          </tr>
+          <tr>
+            <td class="bd pd"><div class="btn2"><a href="javascript:void(0);" onclick="javascript:$('#frmReg').submit();">{:L("lb_btn_save")}</a></div></td>
+            <td class="bd pd">&nbsp;</td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+
+<script src="__PUBLIC__/audio/mediaelement-and-player.min.js" type="text/javascript"></script>
+<link href="__PUBLIC__/audio/mediaelementplayer.min.css" rel="stylesheet" />
+
+<div style="display:none;">
+<audio id="player2" type="audio/mp3" controls></audio>
+</div>
+<script type="text/javascript">
+var player = new MediaElementPlayer('#player2');
+function playit(audio_file){
+
+	$('#player2').attr('src',audio_file);
+	player.play();
+}
+function pauseit(){
+	player.pause();
+}
+</script>
+
+</body>
+</html>

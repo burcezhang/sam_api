@@ -1,0 +1,265 @@
+<!ddressInit('home_address1', 'home_address2', 'home_address3', '{$Dat['home_address'][0]}', '{$Dat['home_address'][1]}', '{$Dat['home_address'][2]}'); addressInit('home_address1', 'home_address2', 'home_address3', '{$Dat['home_address'][0]}', '{$Dat['home_address'][1]}', '{$Dat['home_address'][2]}');doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script src="__PUBLIC__/jsAddress/jsAddress.js" type="text/javascript"></script>
+<script src="__PUBLIC__/uploadify/jquery.uploadify.min.js" type="text/javascript"></script>
+<script src="__PUBLIC__/jsAddress/jsAddress.js" type="text/javascript"></script>
+<link href="__PUBLIC__/uploadify/uploadify.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<div class="editBar" style="position:absolute; right:0; bottom:-5px;">');
+    str.push('<a href="javascript:void(0);" title="{:L("common_ALL_RETURN")}" onclick="Result();" class="iBack">{:L("common_ALL_RETURN")}</a>');
+    str.push('<a href="javascript:void(0);" title=">{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a></div>');
+    $('#bread').html(str.join(""));
+   // addressInit('home_address1', 'home_address2', 'home_address3', '{$Dat['home_address'][0]}', '{$Dat['home_address'][1]}', '{$Dat['home_address'][2]}');
+   addressInit('home_address1', 'home_address2', 'home_address3', 'Korea', 'Korea', 'Korea');
+
+    setTimeout(uploadIfy,500);
+	$('#user_type').change('click', function(){		
+		if($('#user_type').val()=='WEBUSER'){
+			$('#service_no').attr('value','');
+			$('.call_info_box').css('display','none');
+		}else{
+			$('.call_info_box').css('display','');
+		}
+	});
+	$('#account').change('click', function(){		
+		$.post("{:U('Admin/check_account_double')}",{account:$('#account').val(),userid:$('#id').val()},function(returnData){
+					if(returnData.error==0){
+						
+					}else{
+						alert('{:L("alert_data_double")}');
+					}
+		});
+	});
+	$('#service_no').change('click', function(){		
+		$.post("{:U('Admin/check_service_no_double')}",{service_no:$('#service_no').val(),userid:$('#id').val()},function(returnData){
+					if(returnData.error==0){
+						
+					}else{
+						alert('{:L("alert_service_no_double")}');
+					}
+		});
+	});
+});
+function uploadIfy(){
+	$('#flie_upload').uploadify({
+		'swf'      : '__PUBLIC__/uploadify/uploadify.swf',
+		'uploader' : '{:U("Index/uploadify")}',
+		'buttonText' : '. . .',
+		'width' : 80,
+		'height': 20,
+		'onUploadSuccess' : function(file, data, response) {
+			var dataObj=eval("("+data+")");//转换为json对象
+			if(dataObj.error==1){
+				alert(dataObj.info);
+			}else{
+				$('#photo_show').attr('src','{:C("UPLOAD_DIR")}'+dataObj.info.Filedata.savename);
+				$('#photo_src').attr('value','{:C("UPLOAD_DIR")}'+dataObj.info.Filedata.savename);
+				//alert(dataObj.info.Filedata.savename);
+			}
+		}
+	});
+}
+function mfSubmit(){
+	if($('#pwd2').val()!=$('#pwd').val()){
+		alert('{:L("alert_pwd_check_fail")}');
+		return false;
+	}	
+	$.ajax({
+		cache: true,
+		type: "POST",
+		url:"{:U('Admin/reg')}",
+		data:$('#frmReg').serialize(),// 你的formid
+		async: false,
+		error: function(request) {
+			alert("Connection error");
+		},
+		success: function(data) {
+			alert(data.info);
+		}
+	});	
+}
+</script>
+
+</head>
+<body>
+<div id="wrap" class="videoList">
+        <div class="crumbs mb5" id="bread" style="position:relative;"></div>
+<div class="edit">
+  <div class="editContent">
+  	<form id="frmReg" method="post">
+			<input type="hidden" id="id" name="id" value="{$Dat['id']}"  />
+			<input type="hidden" id="loc_id" name="loc_id" value="{$locId}" />
+      <table width="100%" >
+        <tbody>
+          <tr class="bg">
+            <td colspan="4" class="pd"><b>{:L('lb_base_title')}</b></td>
+          </tr>
+          <tr>
+            <td width="60" class="pd">{:L('lb_account')}</td>
+            <td width="200" class="pd"><span class="float_left">
+              <input type="text" id="account" name="account" value="{$Dat['account']}" />
+            </span></td>
+            <td width="60" class="pd"><span class="h30 float_left">{:L('lb_true_name')}</span></td>
+            <td class="pd"><span class="float_left">
+              <input type="text" id="true_name" name="true_name" value="{$Dat['true_name']}" />
+            </span></td>
+          </tr>
+          <tr>
+            <td class="pd"><span class="h30 float_left">{:L('lb_passwd')}</span></td>
+            <td class="pd"><span class="float_left">
+              <input type="password" id="pwd" name="pwd" />
+            </span></td>
+            <td class="pd"><span class="h30 float_left">{:L('lb_passwd2')}</span></td>
+            <td class="pd"><span class="float_left">
+              <input type="password" id="pwd2" name="pwd2" />
+            </span></td>
+          </tr>
+
+          <tr>
+            <td class="pd"><span class="h30 float_left">{:L('lb_tel')}</span></td>
+            <td class="pd"><span class="float_left">
+              <input type="text" id="home_phone" name="home_phone" value="{$Dat['home_phone']}" />
+            </span></td>
+            <td class="pd"><span class="h30 float_left">{:L('lb_phone')}</span></td>
+            <td class="pd"><span class="float_left">
+              <input type="text" id="phone" name="phone" value="{$Dat['phone']}" />
+            </span></td>
+          </tr>
+          <!--
+          <tr>
+            <td class="pd">{:L("lb_notes_tel")}</td>
+            <td class="pd">
+              <input type="text" id="notes_tel" name="notes[tel]" value="{$Dat['notes']['tel']}" style="width:120px;" />
+            </td>
+          </tr>
+          <tr>
+            <td class="pd">{:L("lb_create_date")}</td>
+            <td class="pd">
+              <input type="text" id="create_date" name="create_date" value="{$Dat['create_date']}" style="width:120px;" />
+            </td>
+          </tr>
+          -->
+          <tr>
+            <td class="pd"><span class="h30 float_left">{:L('lb_address')}</span></td>
+            <td colspan="3" class="pd"><span class="float_left">
+                <select id="home_address1" name="home_address[]" class=""><option value=" "></option></select>
+                <select id="home_address2" name="home_address[]" class=""><option value=" "></option></select>
+                <select id="home_address3" name="home_address[]" class=""><option value=" "></option></select>
+                <input type="text" id="home_address4" name="home_address[]" value='{$Dat['home_address'][3]}'  />
+            </span></td>
+          </tr>
+          <tr>
+            <td class="pd"><span class="h30 float_left">{:L('lb_user_type')}</span></td>
+            <td class="pd"><span class="w160 h30 float_left">
+              <select id="user_type" name="user_type">
+                  <option value="WORKMAN" <if condition="( $Dat['user_type'] EQ 'WORKMAN' )" > selected </if>>{:L('lb_user_type_WORKMAN')}</option>                
+                  <option value="WEBUSER" <if condition="( $Dat['user_type'] EQ 'WEBUSER' )" > selected </if>>{:L('lb_user_type_WEBUSER')}</option>                  
+
+                <!--
+							<option value="CUSTOMERMANAGER">客户经理</option>
+							<option value="OPERATORMANAGER">客服经理</option>
+							<option value="OPERATOR">客服</option>
+							<option value="INVENTORY">进销存</option>
+							-->
+                <if condition="($userinfo['loc_id'] LT 2)">
+                  <option value="ADMINS" <if condition="( $Dat['user_type'] EQ 'ADMINS' )" > selected </if>>{:L('lb_user_type_ADMINS')}</option>
+                </if>
+              </select>
+            </span></td>
+            <td class="pd"><span class="bd pd"><span class="h30 float_left">{:L('lb_status_flg')}</span></span></td>
+            <td class="pd"><span class="bd pd"><span class="float_left">
+              <select id="status_flg" name="status_flg">
+                    <option value="Y" <if condition="( $Dat['status_flg'] EQ 'Y' )" > selected </if>>{:L('lb_status_flg_Y')}</option>
+                    <option value="N" <if condition="( $Dat['status_flg'] EQ 'N' )" > selected </if>>{:L('lb_status_flg_N')}</option>
+              </select>
+            </span></span></td>
+          </tr>
+          <tr>
+            <td class="bd pd"><span class="h30 float_left">{:L('lb_group_id')}</span></td>
+            <td colspan="3" class="bd pd"><span class="float_left">
+              <select id="group_id" name="group_id">
+                <option value="0"></option>
+                <volist id="vo2" name="group_list">
+                 	<option value="{$vo2.id}" <if condition="( $Dat['group_id'] EQ $vo2.id )" > selected </if>>{$vo2.group_name}</option>
+                </volist>
+              </select>
+            </span></td>
+          </tr>
+          <if condition="($userinfo['loc_id'] LT 0)">
+          <tr>
+            <td class="bd pd"><span class="h30 float_left">{:L('lb_loc_id')}</span></td>
+            <td colspan="3" class="bd pd"><span class="float_left">
+            <input type="hidden" id="loc_level" name="loc_level" value="1" />
+            <select id="loc_path" name="loc_path[]" onchange="getLocPath(1)">
+              <option value=""></option>
+              <volist id="vo3" name="loclist">
+                <option value="{$vo.id}">{$vo.loc_name}</option>
+              </volist>
+            </select>
+            </span></td>
+          </tr>
+          </if>
+          <tr class="call_info_box">
+            <td colspan="4" class="bd pd">&nbsp;</td>
+          </tr>
+          <tr class="call_info_box bg">
+            <td colspan="4" class="bd pd"><b>{:L('lb_other_title')}</b></td>
+          </tr>
+          <tr class="call_info_box">
+            <td class="bd pd"><span class="h30 float_left">{:L('lb_is_service')}</span></td>
+            <td class="bd pd"><span class="w160 h30 float_left">
+            <if condition="($Dat['is_service'] EQ 'Y')">
+              <input name="is_service" type="checkbox" id="is_service" value="Y" checked />
+            <else />
+              <input name="is_service" type="checkbox" id="is_service" value="Y" />
+            </if>
+            </span></td>
+            <td class="bd pd"><span class="h30 float_left">{:L('lb_service_type')}</span></td>
+            <td class="bd pd"><span class="float_left">
+              <select id="service_type" name="service_type">
+                <option value="gateway" <if condition="($Dat['service_type'] EQ 'gateway')"> selected </if>>{:L('lb_service_type_gateway')}</option>
+                <option value="sip" <if condition="($Dat['service_type'] EQ 'sip')"> selected </if>>{:L('lb_service_type_sip')}</option>
+                <option value="Local" <if condition="($Dat['service_type'] EQ 'Local')"> selected </if>>{:L('lb_service_type_local')}</option>
+              </select>
+            </span></td>
+          </tr>
+          <tr class="call_info_box">
+            <td class="bd pd"><span class="h30 float_left">{:L('lb_service_no')}</span></td>
+            <td class="bd pd"><span class="w160 h30 float_left">
+              <input name="service_no" type="text" id="service_no" value="{$Dat['service_no']}"  />
+            </span></td>
+            <td class="bd pd"><span class="h30 float_left">{:L('lb_service_pwd')}</span></td>
+            <td class="bd pd"><span class="float_left">
+              <input name="service_pwd" type="text" id="service_pwd" value="{$Dat['service_pwd']}" />
+            </span></td>
+          </tr>
+          <tr>
+            <td class="bd pd">&nbsp;</td>
+            <td colspan="3" class="bd pd">&nbsp;</td>
+          </tr>
+          <tr>
+            <td class="bd pd">&nbsp;</td>
+            <td colspan="3" class="bd pd">
+              <input type="button" value="{:L("lb_btn_enter")}" class="btnBlue" onClick="mfSubmit()" />
+              <input type="reset" value="{:L("lb_btn_cancel")}" onclick="Result();" class="btnGray ml20" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+
+			<div id="toolbar_index"  class="toolbar_icon">
+				<a href="{:U('Operator/index')}"><img src="__PUBLIC__/images/toolbar_icon_home.png" /></a>
+				<div>{:L('lb_toolbar_home')}</div>
+			</div>
+			<div id="toolbar_datalist"  class="toolbar_icon">
+				<a href="{:U('Operator/datalist')}"><img src="__PUBLIC__/images/toolbar_icon_history.png" /></a>
+				<div>{:L('lb_toolbar_history')}</div>
+			</div>
+			
+			<div id="toolbar_setpwd" class="toolbar_icon">
+				<a href="{:U('Operator/setpwd')}"><img src="__PUBLIC__/images/toolbar_icon_setting.png" /></a>
+				<div>{:L('lb_toolbar_setpwd')}</div>
+			</div>
+
+			<script type="text/javascript">
+			var action_name='{$Think.ACTION_NAME}';
+			$('#toolbar_'+action_name).addClass('toolbar_icon_hover');
+			</script>

@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>{:L('common_web_title')}</title>
+
+<link href="__PUBLIC__/css/base.css" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body scroll="no">
+
+	<div style="width:90%;line-height:30px;text-align:center;margin:10px auto;">
+		{:L('lb_voice_count_title')} : {$voice_count}<br/>
+		<volist id="vo" name="voice_list" key="k">
+			&nbsp;&nbsp;<a href="{$vo.voice_detail.MonitorFilename}" target="framePlay" style="">{:L('lb_voice_item_title')}{$k}</a>&nbsp;&nbsp;
+		</volist>
+	</div>
+	
+	<div style="width:80%;height:100px;margin:10px auto;">
+		<iframe id="framePlay" name="framePlay" frameborder="0" width="100%" height="100" marginheight="0" marginwidth="0" scrolling="no" src="about:blank"></iframe>
+	</div>
+
+</body>
+</html>

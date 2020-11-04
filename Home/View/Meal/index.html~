@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+
+<script type="text/javascript">
+//if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<div class="editBar" style="position:absolute; right:0; bottom:-5px;">');
+    //str.push('<a href="javascript:void(0);" title="{:L("common_ALL_RETURN")}" onclick="Result();" class="iBack">{:L("common_ALL_RETURN")}</a>');
+    str.push('<a href="javascript:void(0);" title=">{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a></div>');
+    $('#bread').html(str.join(""));
+});
+function mfSubmit(){
+	$.ajax({
+		cache: true,
+		type: "POST",
+		url:"{:U('Meal/edit')}",
+		data:$('#frmReg').serialize(),//你的formid
+		async: false,
+		error: function(request) {
+			alert("Connection error");
+		},
+		success: function(data) {
+			alert(data.reason);
+		}
+	});	
+}
+</script>
+
+</head>
+<body>
+<div id="wrap" class="videoList">
+<div class="crumbs mb5" id="bread" style="position:relative;"></div>
+<div class="edit">
+  <div class="editContent">
+  	<form id="frmReg" method="post">
+	  <input type="hidden" id="id" name="id" value="{$data['id']}" />
+      <table width="100%" >
+        <tbody>
+          <tr>
+            <td align="right" valign="top">&nbsp;</td>
+            <td colspan="3"><font color="#FF0000">(注：多条内容请换行）</font></td>
+          </tr>
+          <tr class="bg">
+            <td width="80" align="right" valign="top">{:L('lb_list_week0')}：</td>
+            <td width="120">{:L('lb_list_breakfast')}</td>
+            <td width="120">{:L('lb_list_lunch')}</td>
+            <td>{:L('lb_list_dinner')}</td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td valign="top" id="week0" data="0"><textarea name="week0[breakfast]" rows="12">{$data['week0']['breakfast']}</textarea></td>
+            <td valign="top" id="week0" data="0"><textarea name="week0[lunch]" rows="12">{$data['week0']['lunch']}</textarea></td>
+            <td valign="top" id="week0" data="0"><textarea name="week0[dinner]" rows="12">{$data['week0']['dinner']}</textarea></td>
+          </tr>
+          <for start="1" end="7">
+          <tr class="bg">
+            <td align="right" valign="top">{:L('lb_list_week'.$i)}：</td>
+            <td>{:L('lb_list_breakfast')}</td>
+            <td>{:L('lb_list_lunch')}</td>
+            <td>{:L('lb_list_dinner')}</td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td valign="top" id="week0" data="0"><textarea name="week{$i}[breakfast]" rows="12">{$data["week$i"]['breakfast']}</textarea></td>
+            <td valign="top" id="week0" data="0"><textarea name="week{$i}[lunch]" rows="12">{$data["week$i"]['lunch']}</textarea></td>
+            <td valign="top" id="week0" data="0"><textarea name="week{$i}[dinner]" rows="12">{$data["week$i"]['dinner']}</textarea></td>
+          </tr>
+          </for>          
+          <tr>
+            <td align="right" valign="top">&nbsp;</td>
+            <td colspan="3">&nbsp;</td>
+          </tr>
+          <tr>
+            <td align="right" valign="top">&nbsp;</td>
+            <td colspan="3" class="bd pd">
+            <input type="button" value="{:L("lb_btn_enter")}" class="btnBlue" onClick="mfSubmit()" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>{:L('common_web_title')}</title>
+	<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+	<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="__PUBLIC__/res/css/upload.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/jsAddress/jsAddress.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/jscript/upload.min.js"></script>
+    <link href="__PUBLIC__/uploadify/uploadify.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript">
+	if (top.location == self.location) top.location.href = '/welcome~index.html';
+    $(document).ready(function(e) {
+		var str=[];
+		str.push('<div class="editBar" style="position:absolute; right:0; bottom:-5px;">');
+		str.push('<a href="javascript:void(0);" title="{:L("common_ALL_RETURN")}" onclick="Result();" class="iBack">{:L("common_ALL_RETURN")}</a>');
+		str.push('<a href="javascript:void(0);" title=">{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a></div>');
+		$('#bread').html(str.join(""));
+		addressInit('address1', 'address2', 'address3', '{$Dat['notes']['address'][0]}', '{$Dat['notes']['address'][1]}', '{$Dat['notes']['address'][3]}');
+		$('#group_name').val('{$group_name}');
+		setTimeout(uploadIfy,500);
+    });
+function uploadIfy(){
+	var init = new localUp($('#upload_box'),{rWidth: 80,quality: 1,success:function (stop, data) {
+		//data.original.size = (data.original.size / 1024).toFixed(2);
+		$('#img').attr('src',data.base64);
+		$('#photo').val(data.base64);
+		setTimeout(function () {stop();}, 1000);
+	}});
+	init.change(function(n) {
+		"function" == typeof this.defaults.change ? this.defaults.change(n) : void 0;
+	}).success(function(n, t) {
+		"function" == typeof this.defaults.success ? this.defaults.success(n, t) : void 0;
+	}).reset = function() {
+		init.UI.reset();
+		"function" == typeof this.defaults.reset&&this.defaults.reset();
+	}
+	<if condition="($Dat['notes']['photo_src'])"> init.setImg("{$Dat['notes']['photo_src']}");</if>
+}
+function mfSubmit(){
+	$.ajax({
+		cache: true,
+		type: "POST",
+		url:"{:U('Admin/locadd')}",
+		data:$('#frmReg').serialize(),// 你的formid
+		async: false,
+		error: function(request) {
+			alert("Connection error");
+		},
+		success: function(data) {
+			alert(data.info);
+		}
+	});	
+}
+</script>
+
+</head>
+<body>
+	<div id="wrap" class="videoList">
+            <div class="crumbs mb5" id="bread" style="position:relative;"></div>
+<div class="edit">
+  <div class="editContent">
+  	<form id="frmReg" method="post">
+    <input type="hidden" id="parent_id" name="parent_id" value="{$locId}" />
+    <input type="hidden" id="parent_str" name="parent_str" value="{$parent_str},{$locId}" />
+    <input type="hidden" id="status_flg" name="status_flg" value="Y" />
+    <input type="hidden" id="id" name="id" value="{$Dat['id']}" />
+      <table width="100%" >
+        <tbody>
+          <tr>
+              <td width="60" class="pd"><span style="vertical-align: top;">{:L('lb_list_photo')}<br>
+(80*80px)</span>
+
+              </td>
+              <td class="pd">
+              	<div id="upload_box" style="width:100px;height:100px;"></div>
+                <input name="photo" type="hidden" value="" id="photo"/>
+			  </td>
+          </tr>
+          <tr>
+            <td class="pd">{:L("lb_parent_name")}</td>
+            <td class="pd">
+              <input type="text" id="parent_name" name="parent_name" value="{$parent_name|default='顶级'}" readonly />
+            </td>
+          </tr>
+          <tr>
+            <td class="pd">{:L("lb_group_name")}</td>
+            <td class="pd">
+                <select id="group_name" name="group_name">
+                <option value="C">CareCenter</option>
+                <option value="P">Private</option>
+             </select>
+            </td>
+          </tr>          
+          <tr>
+            <td class="pd">{:L("lb_loc_name")}</td>
+            <td class="pd">
+              <input type="text" id="loc_name" name="loc_name" value="{$Dat['loc_name']}" style="width:120px;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td class="pd">{:L("lb_notes_area")}</td>
+            <td class="pd">
+              <input type="text" id="notes_area" name="notes[area]" value="{$Dat['notes']['area']}" style="width:120px;" />
+            </td>
+          </tr>
+          <tr>
+            <td class="pd">{:L("lb_notes_title")}</td>
+            <td class="pd">
+              <input type="text" id="notes_title" name="notes[title]" value="{$Dat['notes']['title']}" style="width:120px;" />
+            </td>
+          </tr>
+          <tr>
+            <td class="pd">{:L("lb_notes_contact")}</td>
+            <td class="pd">
+              <input type="text" id="notes_contact" name="notes[contact]" value="{$Dat['notes']['contact']}" style="width:120px;" />
+            </td>
+          </tr>
+          <tr>
+            <td class="pd">{:L("lb_notes_phone")}</td>
+            <td class="pd">
+              <input type="text" id="notes_phone" name="notes[phone]" value="{$Dat['notes']['phone']}" style="width:120px;" />
+            </td>
+          </tr>
+          <tr>
+            <td class="pd">{:L("lb_notes_tel")}</td>
+            <td class="pd">
+              <input type="text" id="notes_tel" name="notes[tel]" value="{$Dat['notes']['tel']}" style="width:120px;" />
+            </td>
+          </tr>
+          <tr>
+            <td class="pd">{:L("lb_create_date")}</td>
+            <td class="pd">
+              <input type="text" id="create_date" name="create_date" value="{$Dat['create_date']}" style="width:120px;" />
+            </td>
+          </tr>
+          <tr>
+            <td class="pd">{:L("lb_address")}</td>
+            <td class="pd">
+              <select id="address1" name="notes[address][]" class="">
+                <option value=""></option>
+              </select>
+              <select id="address2" name="notes[address][]" class="">
+                <option value=""></option>
+              </select>
+              <select id="address3" name="notes[address][]" class="">
+                <option value=""></option>
+              </select>
+              <input type="text" id="address4" name="notes[address][]" value="{$Dat['notes']['address'][3]|default=''}" />
+            </td>
+          </tr>
+          <tr>
+            <td class="pd">{:L("lb_notes_remark")}</td>
+            <td class="pd">
+              <textarea id="notes_remark" name="notes[remark]" style="width:550px;height:80px;">{$Dat['notes']['remark']}</textarea>
+            </td>
+          </tr>
+          <tr>
+            <td class="bd pd">&nbsp;</td>
+            <td class="bd pd">
+              <input type="button" value="{:L("lb_btn_enter")}" class="btnBlue" onClick="mfSubmit()" />
+              <input type="reset" value="{:L("lb_btn_cancel")}" onclick="Result();" class="btnGray ml20" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+</body>
+</html>

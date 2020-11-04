@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>{:L('common_web_title')}</title>
+
+<link href="__PUBLIC__/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+<script src="__PUBLIC__/js/jquery-1.7.2.min.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/jquery.cookie.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(function(){
+	$(".lang_box").hover(function(){
+		$(".lang_select").show();
+	},function(){
+		$(".lang_select").hide();
+	});
+	
+	var ck_username= $.cookie('txt_username');
+	if(ck_username!=null && ck_username!=''){
+		$('#tb_username').attr('value',ck_username);
+		$("#btn_keep_login").attr("checked","checked");
+	}
+});
+
+function chkFrmLogin()
+{
+	if($('#tb_username').val()=='{:L("lb_username")}' || $('#tb_username').val()==''){
+		alert('{:L("alert_username")}');
+		return false;
+	}
+	if($('#tb_passwd').val()=='Password' || $('#tb_passwd').val()==''){
+		alert('{:L("alert_password")}');
+		return false;
+	}
+	//alert($('#btn_keep_login').attr("checked"));
+	//return false;
+	if('checked' == $('#btn_keep_login').attr("checked")) {
+		$.cookie('txt_username', $('#tb_username').val(), {expires: 7, path: '/'});
+	}else{
+		$.cookie('txt_username', '', {expires: -1, path: '/'});
+	}
+	return true;
+}
+
+function EnterPress(e)
+{
+	var e = e || window.event; 
+	if(e.keyCode == 13){ 
+		$('#frmLogin').submit();
+	} 
+}
+</script>
+
+</head>
+
+<body class="comm_bg" scroll="no">
+
+<div class="lang">
+	<div class="lang_box">{:L('common_lb_lang')}
+	<div class="lang_select">
+		<li><a href="?l=zh_CN">中文</a></li>
+		<li><a href="?l=en_US">English</a></li>
+	</div>	
+	</div>	
+</div>
+
+<div class="clear"></div>
+
+<form id="frmLogin" name="frmLogin" method="post" action="{:U('Index/index')}" onsubmit="return chkFrmLogin()">
+<div class="login_box">
+	<div class="login_logo"></div>
+	<div class="tb_username"><input type="input" id="tb_username" name="tb_username" value="{:L('lb_username')}" onclick="javascript:this.select();" /></div>
+	<div class="tb_passwd"><input type="password" id="tb_passwd" name="tb_passwd" value="Password" onclick="javascript:this.select();" onkeypress="EnterPress(event)" onkeydown="EnterPress()" /></div>
+	<div class="btn_login"><a href="javascript:void(0);" onclick="javascript:$('#frmLogin').submit();">{:L('lb_btn_login')}</a></div>
+	<div class="btn_keep_login"><input type="checkbox" id="btn_keep_login" name="btn_keep_login" value="1"  />{:L('lb_btn_keep_login')}</div>
+	<div class="btn_create_account"><a href="{:U('Index/reg')}">{:L('lb_btn_create_account')}</a></div>
+</div>
+</form>
+
+<div class="clear"></div>
+
+<div class="login_footer">
+	AnyCare Copyright &copy; Anycare Corp,All Rights Reserved.
+</div>
+
+</body>
+</html>

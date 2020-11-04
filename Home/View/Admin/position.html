@@ -1,0 +1,246 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script src="__PUBLIC__/js/jquery-1.7.2.min.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/jquery.form.js" type="text/javascript"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/select.min.js"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<span class="search">');
+    str.push('<form action="" method="get" class="forms" id="fm1">');
+    str.push('<div class="searchBar ml50 fl">');
+    str.push('<input type="text" autofocus="autofocus" placeholder="{:L("common_ALL_SERASH_TITLE")}" name="keyword" id="keyword" value="{$keyword}" class="keyword" />');
+    str.push('<input type="submit" value="{:L("common_ALL_SERASH")}" class="btnSearch" />');
+    str.push('</div></form></span>');		
+    $('#bread').html(str.join(""));
+	
+	$.divselect("#divselect","#inputselect");
+	$('#group_name').change('click', function(){		
+		$.post("{:U('Admin/position_check_double')}",{gname:$('#group_name').val(),gid:$('#id').val(),locid:$('#loc_id').val()},function(returnData){
+					if(returnData.error==0){
+						
+					}else{
+						alert('{:L("alert_data_double")}');
+					}
+		});
+	});
+	
+	var ajax_option={
+		url:"{:U('Admin/position_save')}",
+		success:function(data){
+			if(data.error==0){
+				alert(data.info+'{:L("alert_reg_success")}');
+				window.location.href=window.location.href;
+			}else if(data.error==2){
+				alert('{:L("alert_data_double")}');
+			}else{
+				alert(data.info+'{:L("alert_reg_failed")}');
+			}
+		}
+	};
+	$('#frmReg').submit(function() {
+        if(chkFrmReg()==true){
+			$(this).ajaxSubmit(ajax_option);
+		}
+        return false;
+    });
+});
+
+function set_popup_window(flg){
+	$('#popup_window').css('display',flg);
+}
+
+function chkFrmReg()
+{
+	if($('#group_name').val()==''){
+		alert('{:L("alert_group_name")}');
+		return false;
+	}
+	return true;
+}
+function deleteinfo(gid,gname){
+	if(confirm('{:L("prompt_delete")}')){
+		$.post("{:U('Admin/position_delete')}",{id:gid,name:gname},function(returnData){
+			if(returnData.error==0){
+				window.location.href = window.location.href;
+			}else{
+				alert('{:L("alert_get_data_fail")}');
+			}
+		});
+	}
+}
+
+function editinfo(gid){
+	$('.ck_role_list').removeAttr('checked');
+	$.post("{:U('Admin/get_position_info')}",{gid:gid},function(returnData){
+		if(returnData.error==0){
+			$('.info_box_title_text').html('{:L("lb_title_edit")}');
+			$('#id').attr('value',returnData.info.id);
+			$('#group_name').attr('value',returnData.info.group_name);
+			var sRole = (returnData.info.content).split(',');
+			for(var i=0;i<sRole.length;i++){
+				$('#ck_'+sRole[i]).attr("checked","checked");
+			}
+			$('#popup_window').css('display','');
+		}else{
+			alert('{:L("alert_get_data_fail")}');
+		}
+	});
+}
+function addposition(){
+	$('.info_box_title_text').html('{:L("lb_title_addnew")}');
+	$('#id').attr('value','');
+	$('#group_name').attr('value','');
+	$('.ck_role_list').removeAttr('checked');
+	
+	$('#popup_window').css('display','');
+}
+</script>
+</head>
+<body>
+	<div id="wrap" class="videoList">
+	<div class="crumbs mb5" id="bread"></div>
+	<div class="acbar">
+    	<if condition="$userinfo['loc_id']==1">
+    	<div class="fl H40">
+        	<div id="divselect" class="divselect">
+              <cite><span>{$locname}</span><s></s></cite>
+              <ul style="display: none;">
+				 <volist id="vo" name="loclist" key="k">
+                 <li>
+                 <div class="tree_row <if condition="($vo['id'] eq $locid)">tree_row_hover</if>">
+                 <for start="$space_num" end="$vo['count']"><div class="tree_space"></div></for>
+                 <div class="<if condition="($vo['group_count'] eq 0)"> 
+                 tree_state_default 
+                 <else/> 
+                 tree_state_open 
+                 </if>"></div>
+                 <div class="tree_title"><a href="{:U('Admin/position?name='.$vo['loc_name'].'&count='.$vo['group_count'].'&loc='.$vo['id'].'')}" selectid="{$vo['id']}">{$vo['loc_name']}({$vo['group_count']})</a></div>
+                 </div>
+                 </li>
+                 </volist>
+              </ul>
+              <input name="" type="hidden" value="" id="inputselect">
+            </div>
+        </div>
+        </if>
+        <div class="editBar fr H40">
+        	<a href="javascript:void(0);" onclick="javascript:addposition();" title="{:L("common_ALL_ADD")}" class="iAdd">{:L("common_ALL_ADD")}</a>
+        	<a href="javascript:void(0);" title="{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a>
+        </div>
+	  </div>
+      <div class="clearb"></div>
+    <!--
+    <table width="20%" height="100%" class="fl mr15">
+      <tr>
+        <td width="100%" height="100%" valign="top">
+          <div>
+            <volist id="vo" name="loclist" key="k">
+              <div class="tree_row <if condition="($vo['id'] eq $locid)">tree_row_hover</if>">
+                <for start="$space_num" end="$vo['count']">
+                  <div class="tree_space"></div>
+                </for>
+                <div class="<if condition="($vo['group_count'] eq 0)">tree_state_default<else/>tree_state_open </if>"></div>
+                <div class="tree_title"><a href="{:U('Admin/position?loc='.$vo['id'].'')}">{$vo['loc_name']}({$vo['group_count']})</a></div>
+              </div>
+            </volist>
+          </div></td>
+      </tr>
+    </table>
+    -->
+    <table width="100%"  class="fl videoListTable">
+        <thead>
+            <tr>
+              <th>{:L("lb_list_title_item_no")}</th>
+              <th>{:L("lb_list_title_group_name")}</th>
+              <th>{:L("lb_list_title_role")}</th>
+              <th width="80">{:L("lb_list_title_action")}</th>
+            </tr>
+      </thead>
+        <tbody id="box_list">
+        <volist id="vo" name="datalist" key="k">
+			<tr class="datalist">
+			  <td align="center" >{$k}</td>
+			  <td align="center">{$vo.group_name}</td>
+			  <td align="center">{$vo.content|getRoleTitle=###}</td>
+			  <td align="center">
+               <a class="iconedit" href="javascript:void(0);" onclick="javascript:editinfo({$vo.id});"><img src="__PUBLIC__/res/images/iconedit.png" alt="{:L("lb_btn_edit")}" width="26" height="26"></a>
+				<a class="icondel" href="javascript:void(0);" onclick="javascript:deleteinfo({$vo.id},'{$vo.group_name}');"><img src="__PUBLIC__/res/images/icondel.png" alt="{:L("lb_btn_delete")}" width="26" height="26"></a>
+		  </tr>
+		  </volist>
+        </tbody>
+    </table>    
+			<div class="pager">{$page}</div>
+      </div>
+</div>
+
+<div id="popup_window" class="popup_window" style="left:40%;display:none;">
+	<div id="popup_window_title" class="popup_window_title">&nbsp;</div>
+	<div id="popup_window_content" class="popup_window_content">
+		<form id="frmReg" method="post" action="{:U('Admin/position_save')}">
+		<div class="info_box" style="width:500px;height:350px;background:#ffffff;">
+			<div class="info_box_title">
+				<div class="info_box_title_icon"><img src="__PUBLIC__/images/toolbar_icon_group.png" style="max-height:20px;margin-top:2px;" /></div>
+				<div class="info_box_title_text">{:L("lb_title_addnew")}</div>
+			</div>
+			
+			<div class="info_box_footer">
+				<div class="info_box_footer_btn1"><a href="javascript:void(0);" onclick="javascript:$('#frmReg').submit();">{:L("lb_btn_enter")}</a></div>
+				<div class="info_box_footer_btn2"><a href="javascript:void(0);" onclick="javascript:set_popup_window('none');">{:L("lb_btn_cancel")}</a></div>
+			</div>
+			<input type="hidden" id="id" name="id" />
+			<input type="hidden" id="loc_id" name="loc_id" value="{$locid}" />
+			<div class="info_box_content">
+				<div class="h30">&nbsp;</div>
+				
+				<div class="h30">
+					<div class="w80 h30 fl"></div>
+					<div class="w80 h30 fl">{:L("lb_group_name")}</div>
+					<div class="fl"><input type="text" id="group_name" name="group_name" /></div>
+				</div>
+				
+				<div class="h30">
+					<div class="w80 h30 fl"></div>
+					<div class="w80 h30 fl"></div>
+					<div class="w160 h30 fl">
+						<volist id="vo" name="role_list">
+						<input type="checkbox" id="ck_{$vo.krole}" name="role[{$vo.krole}]" value="{$vo.krole}" class="ck_role_list" />{$vo.title}<br/>
+						</volist>
+					</div>
+					
+				</div>
+				
+				<div class="h20 clear"></div>
+				<div class="h20 clear"></div>
+				
+			</div>
+			
+		</div>
+		</form>
+	</div>
+</div>
+<script type="text/javascript">
+function rowColor(){
+	if(document.getElementById('J-rowColor')){
+		var orowColor=document.getElementById('J-rowColor').rows;
+		var i;
+		for(i=0; i<orowColor.length;i++){   
+			if(i%2==0){   
+				orowColor[i].style.background = "#E5E5E5";  
+			}   
+		}  
+	}
+}   
+rowColor();
+</script>
+</body>
+</html>

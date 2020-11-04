@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>{:L('common_web_title')}</title>
+<style>html, body {overflow: hidden;}</style>
+<link href="css/base.css" rel="stylesheet" type="text/css" />
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/jscript/box/box.css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/md5.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/main.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/box/box.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/event.js"></script>
+<script type="text/javascript">
+document.domain="anycare-cn.com";
+menuid='{$id}';
+submenuid='{$subid}';
+var menuno='{$menu_count}';
+window.onresize=resize;
+window.onload=function(){
+	Main=$('#mBrower').ccontentWindow;
+    $('#J-navList').css("width",menuno*90);
+    resize();
+    initMenu();
+}
+function full(){
+	if(rHeight>0){
+		rHeight=0;
+		$('#header').css('height','135px');
+		$('#logo').show();
+		$('#quee').show();
+		$('#footer').show();
+		$('.loginBar').show();
+		$('#nav').css('margin-top','7px');
+		$('#menu').css('top','137px');
+		$('#content').css('top','137px');
+	}else{
+		rHeight=65;
+		$('#header').css('height','65px');
+		$('#logo').hide();
+		$('#quee').hide();
+		$('#footer').hide();
+		$('.loginBar').hide();
+		$('#nav').css('margin-top','1px');
+		$('#menu').css('top',rHeight+'px');
+		$('#content').css('top',rHeight+'px');
+	}
+	resize();
+	//$('#menu').css('height',(document.body.clientHeight-rHeight)+'px');
+	//$('#content').css('height',(document.body.clientHeight-rHeight)+'px');
+}
+</script>
+</head>
+
+<body>
+<iframe id="subBrower" name="subBrower" width="100%" height="30%" style="display:none;z-index:999;position:fixed;left:0px;top:0px;"></iframe>
+<!-- header start -->
+<div id="header">
+      <div id="logo" class="logo fl"><img src="images/logo.png" alt="{@SITE_NAME}" width="271" height="44"></div>
+      <div id="quee" class="announcement fl">
+    	<marquee>为了获得最佳浏览效果，请升级您的浏览器或换用谷歌、火狐浏览器访问。</marquee>
+  	  </div>
+      <div class="loginBar fl"> 
+          <span class="loginwel" id="J-loginwel">Hello,{@USINFO['username']}<b class="triangle"></b></span>
+          <ul class="loginwelList" id="J-loginwelList">
+            <li> <a href="/admin/password/" target="mBrower">修改密码</a></li>
+            <li> <a href="/login/quit/">安全退出</a> </li>
+          </ul>
+      </div>
+      
+      <div class="loading fl" id="loading" style="display:none;">请耐心等待....</div>
+      
+      <div class="nav fl" id="nav">
+    <a href="javascript:void(0);"  onClick="full()">
+    	<img src="images/menu.png" alt="" id="J-menuTitle" class="fl" width="155">
+    </a>
+    <a id='move_left' href="javascript:void(0);" class="pre" onClick="moveMenu(true)"></a>
+    <div id="J-navList" class="navlist"  style="float:left;width: 94%;height: 65px;overflow: hidden; position: relative;">
+        <ul id="J-navList-ul" style="clear: both;height: 65px; width:2440px;list-style: none;top: 0px;left: 0px;display: block;position: relative;">
+        {eval $n=0;}
+        {loop $menu $k $title}
+            {if $n==0}
+                <li style="float: left;height: 65px;line-height: 65px;text-align: center;color: #000;">
+                <a href="javascript:void(0);" id="menu_btn_{$k}" onClick="show_menu('{$k}','{$title}')" class="{$k} navCurrent">
+                <div style="margin-top:20px;">{$title}</div>
+                </a>
+                </li>
+            {else}
+                <li style="float: left;height: 65px;line-height: 65px;text-align: center;color: #000;">
+                <a href="javascript:void(0);" id="menu_btn_{$k}" onClick="show_menu('{$k}','{$title}')" class="{$k}">
+                <div style="margin-top:20px;">{$title}</div>
+                </a>
+                </li>
+            {/if}
+            {eval $n++;}
+        {/loop}
+      </ul>
+    </div>
+    <a id='move_right' href="javascript:void(0);" onClick="moveMenu(false)" class="next"></a> </div>
+    <div class="navborder"></div>
+    </div>
+<!-- header end --> 
+
+<!-- menu start -->
+<div id="menu" style="left:0px;">
+  {loop $submenu $k $dat}
+  <a href='javascript:void(0);' url="/{$dat['func']}" id="submenu_btn_{$k}" onClick="show_submenu('{$k}','{$dat['title']}')">{$dat['title']}</a>
+  {/loop}
+</div>
+<a class="menuHide" id="J-menuHide"><img src="images/menuhide.png" alt="" width="28" height="34"></a> 
+<!-- menu end --> 
+
+<!-- content start -->
+<div id="content">
+      <iframe id="mBrower" name="mBrower" src="/welcome.html" allowtransparency="true" width="100%" height="100%" frameborder="0" scrolling="yes" style="overflow:visible;"></iframe>
+</div>
+<!-- content end --> 
+
+<!-- footer start -->
+<div id="footer"> </div>
+<!-- footer end -->
+</body>
+</html>

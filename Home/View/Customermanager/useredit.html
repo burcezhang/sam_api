@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/select.min.js"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<span class="search">');
+    str.push('<form action="" method="get" class="forms" id="fm1">');
+    str.push('<div class="searchBar ml50 fl">');
+    str.push('<input type="text" autofocus="autofocus" placeholder="{:L("common_ALL_SERASH_TITLE")}" name="keyword" id="keyword" value="{$keyword}" class="keyword" />');
+    str.push('<input type="submit" value="{:L("common_ALL_SERASH")}" class="btnSearch" />');
+    str.push('</div></form></span>');		
+    $('#bread').html(str.join(""));
+});
+function deactive(uid,uname){
+	if(confirm('{:L("prompt_deactive")}')){
+		$.post("{:U('Customermanager/deactive')}",{id:uid},function(returnData){
+			if(returnData.error==0){
+				window.location.href = window.location.href;
+			}else{
+				alert('{:L("lb_get_data_fail")}');
+			}
+		});
+	}
+}
+</script>
+</head>
+<body>
+	<div id="wrap" class="videoList">
+	<div class="crumbs mb5" id="bread"></div>
+	<div class="videoListTable">
+    <div class="clearb">
+        <div class="editBar fr H40">
+        	<a href="/customermanager~index" title="{:L("common_ALL_ADD")}" class="iAdd">{:L("common_ALL_ADD")}</a>
+        	<a href="javascript:void(0);" title="{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a>
+        </div>
+    </div>
+    <table width="100%" id="J-rowColor">
+        <thead>
+            <tr>
+                <td>{:L("lb_list_title_item_no")}</td>
+                <td>{:L("lb_list_title_device_sn")}</td>
+                <td>{:L("lb_list_title_elderly_name")}</td>
+                <td>{:L("lb_list_title_age")}</td>
+                <td>{:L("lb_list_title_address")}</td>
+                <td>{:L("lb_list_title_phone")}</td>
+                <td>{:L("lb_list_title_register_date")}</td>
+                <td>{:L("lb_list_title_termination_date")}</td>
+                <td>{:L("lb_list_title_action")}</td>
+            </tr>
+        </thead>
+        <tbody id="box_list">
+        <volist id="vo" name="datalist" key="k">
+			<tr id="row{$vo.id}">
+				<td align="center">{$k}</td>
+                <td>{$vo.device_sn}</td>
+                <td>{$vo.elderly_name}</td>
+                <td>{$vo.age}</td>
+                <td>{$vo.address}</td>
+                <td align="center">{$vo.phone}</td>
+                <td align="center">{$vo.register_date|toDate=###,'Y-m-d'}</td>
+                <td align="center">{$vo.termination_date|toDate=###,'Y-m-d'}</td>
+				<td align="center">
+                <a class="iconedit" href="{:U('Customermanager/useredit_show?id='.$vo['id'])}">
+                	<img src="__PUBLIC__/res/images/iconedit.png" alt="{:L("lb_btn_edit")}" width="26" height="26">
+                </a>
+				<a class="icondel" href="javascript:void(0);" onclick="javascript:deactive({$vo['id']},'{$vo.device_sn}');">
+                	<img src="__PUBLIC__/res/images/icondeact.png" alt="{:L("lb_btn_delete")}" width="26" height="26">
+                </a>
+				</td>
+			</tr>
+			</volist>
+        </tbody>
+    </table>    
+			<div class="pager">{$page}</div>
+		</div>
+      </div>
+</div>
+<script type="text/javascript">
+function rowColor(){
+	if(document.getElementById('J-rowColor')){
+		var orowColor=document.getElementById('J-rowColor').rows;
+		var i;
+		for(i=0; i<orowColor.length;i++){   
+			if(i%2==0){   
+				orowColor[i].style.background = "#E5E5E5";  
+			}   
+		}  
+	}
+}   
+rowColor();
+</script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+    <if condition="$default_map_dj == 2 ">
+        <script src="https://maps.googleapis.com/maps/api/js?key={:C('GOOGLE_AK')}" async defer></script>
+        <else />
+        <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak={:C('BAIDU_AK')}"></script>
+    </if>
+<script type="text/javascript" src="__PUBLIC__/js/convertor.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/select.min.js"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+var popup_action_box_show = false;
+function resize(){
+	var size = parent.getBrowerSize();
+	$('#wrap').width(size.width);
+	$('#wrap').height(size.height);
+	$('.videoListTable').width(size.width);
+	$('.videoListTable').height(size.height);
+	$('#allmap').width(size.width);
+	$('#allmap').height(size.height);
+	$('.content_right1').height(size.height);
+	$('.agedList').height(size.height-80);
+}
+$(document).ready(function(e) {
+	resize();
+	//dropAlertBox();
+	BMap.Convertor.translate(new BMap.Point(beaconlist[beaconLoc].lon,beaconlist[beaconLoc].lat),0,function(point){
+		if ( {$default_map_dj}=='2' )
+			initGoogleMap(beaconlist[beaconLoc].lat, beaconlist[beaconLoc].lon,0);
+		else
+			initBaiduMap(point.lng,point.lat,true);
+	});
+	//initAgedInfo();
+	$.divselect("#divselect","#inputselect");
+});
+$(window).bind("resize",function(){resize();});
+var agedDat={$agedjs|''};
+var beaconlist={$beaconlist|''};
+var beaconLoc='{$beacon}';
+
+function goPostion(beaconID,lon,lat){
+	BMap.Convertor.translate(new BMap.Point(lon,lat),0,function(point){
+		map.clearOverlays()
+		var myIcon = new BMap.Icon("__PUBLIC__/images/location_icon.png", new BMap.Size(40,51));
+		var marker = new BMap.Marker(point,{icon:myIcon});
+		map.addOverlay(marker);
+		map.panTo(point);
+	});
+	//initBaiduMap(lon,lat,true);
+	$('.agedList').html('');
+	for(var k in agedDat[beaconID]){
+		$('.agedList').append(showInfo(agedDat[beaconID][k],k,beaconID));
+	}
+}
+
+function goGpsLocation(name,lon,lat){
+	BMap.Convertor.translate(new BMap.Point(lon,lat),0,function(point){
+		map.clearOverlays()
+		var myIcon = new BMap.Icon("__PUBLIC__/images/location_icon.png", new BMap.Size(40,51));
+		var marker = new BMap.Marker(point,{icon:myIcon});
+		map.addOverlay(marker);
+		var label = new BMap.Label(name,{offset:new BMap.Size(20,-10)});
+		marker.setLabel(label);		
+		map.panTo(point);
+	});
+}
+
+function showInfo(dat,k,beaconID){
+	var s=[];
+	s.push('<div class="agedinfo">');
+	s.push('<div class="face" onclick="showAged('+k+',\''+beaconID+'\')"><img src="'+dat.photo_src+'" width="48" height="48"></div>');
+	s.push('<div class="info"><div class="name">'+dat.elderly_name+'</div>');
+	s.push('<div class="adds"><i class="location"></i>'+dat.lastinfo+'&nbsp;&nbsp;'+(dat.LOC_INFO?dat.LOC_INFO.dt:'')+'</div>');
+	s.push('</div><div class="call" onclick="showAged('+k+',\''+beaconID+'\')"><i class="phone"></i></div></div>');
+	return s.join("");
+}
+function getUserImg(imgsrc){
+	if(imgsrc.length>5){
+		return '<img src="'+imgsrc+'" width="80" height="80" />';
+	}else{
+		return '<img src="__PUBLIC__/images/pager_num_bg.png" width="80" height="80" />';
+	}
+}
+function getSex(sex){
+	if(sex==1){
+		return "{:L('lb_popup_sex_value1')}";
+	}else{
+		return "{:L('lb_popup_sex_value0')}";
+	}
+}
+function closePopupBox(){
+	$('#popup_window_content').html("&nbsp;");
+	popup_action_box_show=false;
+}
+
+function GetCity(lon,lat){
+	BMap.Convertor.translate(new BMap.Point(lon,lat),0,function(point){
+		var geoc = new BMap.Geocoder();
+		
+		geoc.getLocation(point, function(rs){
+			var addComp = rs.addressComponents;
+			$('.popup_gps_location').html("&nbsp;&nbsp;Location : "+addComp.province+addComp.city+addComp.district+addComp.street+addComp.streetNumber);		
+		});
+	});
+}
+
+
+function showAged(k,beaconID){
+	if (agedDat[beaconID][k].lastinfo == 'outside'){
+		var sHtml='<div id="popup_action_box" class="popup_action_box3" style="height:290px;">' +
+			'	<div class="popup_action_box_header">' +
+			'		<div class="popup_action_box_title">{:L("lb_popup_title")}['+agedDat[beaconID][k].lastinfo+']['+agedDat[beaconID][k].LOC_INFO.LONGITUDE+','+agedDat[beaconID][k].LOC_INFO.LATITUDE+']</div>' +
+			'		<div class="popup_action_box_close"><a href="javascript:void(0);" onclick="javascript:closePopupBox();">CLOSE</a></div>' +
+			'	</div>' +
+			'	<div class="popup_action_box_content">' +
+			'		<div style="width:470px;height:145px;margin:1px auto;background:#ffffff;">' +
+			'			<div class="popup_action_box_img">'+getUserImg(agedDat[beaconID][k].photo_src)+'</div>' +
+			'			<div class="popup_action_box_baseinfo" style="width:370px;">' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_name")} : '+agedDat[beaconID][k].elderly_name+'</div>' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_sex")} : '+getSex(agedDat[beaconID][k].sex)+'</div>' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_age")} : '+(agedDat[beaconID][k].barthday)+'</div>' +
+			'			</div>' +
+			'			<div class="clear5"></div>' +
+			'			<div class="clear0 txtbox4" style="width:450px;">&nbsp;&nbsp;<span class="popup_gps_location">&nbsp;&nbsp;Location : '+GetCity(agedDat[beaconID][k].LOC_INFO.LONGITUDE,agedDat[beaconID][k].LOC_INFO.LATITUDE)+'</span>&nbsp;&nbsp;Time : '+agedDat[beaconID][k].LOC_INFO.dt+'</div>'+							
+			'			<div class="clear0 txtbox4" style="width:450px;">&nbsp;&nbsp;<span class="popup_gps_address">&nbsp;&nbsp;Home : '+agedDat[beaconID][k].address+'</span></div>' +
+			'			<div class="clear0 txtbox4" style="width:450px;">&nbsp;&nbsp;<span class="popup_gps_address"></span>&nbsp;&nbsp;Telephone : '+agedDat[beaconID][k].phone+'</div>' +
+			'			<div class="clear0 txtbox4" style="width:450px;">&nbsp;&nbsp;<span class="popup_gps_address"></span>&nbsp;&nbsp;Guardian : '+agedDat[beaconID][k].home_tel+'</div>' +
+			'		</div>' +			
+			'	</div>' +
+			'</div>';
+	}else{
+		var sHtml='<div id="popup_action_box" class="popup_action_box3" style="height:290px;">' +
+			'	<div class="popup_action_box_header">' +
+			'		<div class="popup_action_box_title">{:L("lb_popup_title")}['+agedDat[beaconID][k].lastinfo+']['+agedDat[beaconID][k].LOC_INFO.LONGITUDE+','+agedDat[beaconID][k].LOC_INFO.LATITUDE+']</div>' +
+			'		<div class="popup_action_box_close"><a href="javascript:void(0);" onclick="javascript:closePopupBox();">CLOSE</a></div>' +
+			'	</div>' +
+			'	<div class="popup_action_box_content">' +
+			'		<div style="width:470px;height:145px;margin:1px auto;background:#ffffff;">' +
+			'			<div class="popup_action_box_img">'+getUserImg(agedDat[beaconID][k].photo_src)+'</div>' +
+			'			<div class="popup_action_box_baseinfo" style="width:370px;">' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_name")} : '+agedDat[beaconID][k].elderly_name+'</div>' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_sex")} : '+getSex(agedDat[beaconID][k].sex)+'</div>' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_age")} : '+(agedDat[beaconID][k].barthday)+'</div>' +
+			'			</div>' +
+			'			<div class="clear5"></div>' +
+			'			<div class="clear0 txtbox4" style="width:450px;">&nbsp;&nbsp;<span class="popup_gps_address">&nbsp;&nbsp;Home : '+agedDat[beaconID][k].address+'</span></div>' +
+			'			<div class="clear0 txtbox4" style="width:450px;">&nbsp;&nbsp;<span class="popup_gps_address"></span>&nbsp;&nbsp;Telephone : '+agedDat[beaconID][k].phone+'</div>' +
+			'			<div class="clear0 txtbox4" style="width:450px;">&nbsp;&nbsp;<span class="popup_gps_address"></span>&nbsp;&nbsp;Guardian : '+agedDat[beaconID][k].home_tel+'</div>' +
+			'		</div>' +			
+			'	</div>' +
+			'</div>';
+	}
+
+	goGpsLocation(agedDat[beaconID][k].elderly_name,agedDat[beaconID][k].LOC_INFO.LONGITUDE,agedDat[beaconID][k].LOC_INFO.LATITUDE);
+	
+	$('#popup_window_content').html(sHtml);
+	$('#popup_window').css('left',$(window).width()/2-$('#popup_window_content').width()/2);
+	$('#popup_window').css('top',$(window).height()/2-$('#popup_window_content').height()/2-136);
+}
+function gSerach(){
+	var str=$('#keyword').val();
+	$('.agedinfo').find('.agedinfo').removeClass('curr');
+	for(var beacon in agedDat){
+		for(var id in agedDat[beacon]){
+			var dat=agedDat[beacon][id]
+			if(dat.elderly_name.indexOf(str)>=0){
+				$("#divselect cite").find('span').get(0).innerHTML=beaconlist[beacon]['name']+'('+agedDat[beacon].length+')';
+				$("#inputselect").val(beacon)
+				goPostion(beacon,beaconlist[beacon]['lon'],beaconlist[beacon]['lat']);
+				var obj = $('.agedList').find('.agedinfo').get(id)
+				$(obj).addClass('curr');
+				var size = parent.getBrowerSize();
+				$('.agedList').scrollTop($(obj).position().top-(size.height-80));
+				//$(obj).position().top>size.height
+				return;
+			}
+		}
+	}
+}
+</script>
+<include file="Public:commjs3" />
+</head>
+<body>
+<div id="wrap" class="videoList" style="padding:0;">
+   <!-- <div class="crumbs mb5" id="bread"></div> -->
+    <div class="videoListTable">
+    <div id="allmap"></div>
+    <div class="content_right1">
+        <div class="divselect" style="width:268px;height:28px;background-color:#EFEFEF;">
+        <div class="searchBar">
+        <input type="text" autofocus="autofocus" placeholder="{:L("lb_buton_placeholder")}" style="width: 200px;" id="keyword" value="" class="keyword">
+        <input type="submit" value="{:L("lb_buton_search")}" onClick="gSerach()" class="btnSearch"></div>
+        </div>
+    	<div id="divselect" class="divselect" style="width:268px;background-color: #208061;">
+              <cite><span style="color: #FFF;">{$datalist[0]['name']}({$datalist[0]['count']}人)</span><s style="border-color: #FFFFFF transparent transparent;"></s></cite>
+              <ul style="display: none;">
+              	<volist id="vo" name="datalist">
+				 <li style="background-color: #208061;"><a href="#" style="color: #FFF;" onClick="goPostion('{$vo.beaconID}','{$vo.lon}','{$vo.lat}')">{$vo.name}({$vo.count}人)</a></li>
+                </volist>
+               </ul>
+               <input name="" type="hidden" value="" id="inputselect">
+        </div>
+    	<div class="agedList" style="overflow-y:scroll; margin-top:4px;">
+            <volist id="vo" name="agedlist">
+                <div class="agedinfo">
+                <div class="face" onClick="showAged({$key},'{$beacon}')"><img src="{$vo.photo_src}" width="48" height="48"></div>
+                <div class="info">
+                <div class="name">{$vo.elderly_name}</div>
+                <div class="adds"><i class="location"></i>{$vo.lastinfo}&nbsp;&nbsp;{$vo.LOC_INFO.dt}</div>
+                </div>
+                <div class="call" onClick="showAged({$key},'{$beacon}')">
+                <i class="phone"></i>
+                </div>
+                </div>
+            </volist>
+        </div>
+    
+    </div>
+    </div>
+</div>
+<div id="popup_window" class="popup_window" style="">
+	<div id="popup_window_title" class="popup_window_title">&nbsp;</div>
+	<div id="popup_window_content" class="popup_window_content"></div>
+</div>
+</body>
+</html>

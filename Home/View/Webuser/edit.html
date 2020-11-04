@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*" />
+<title>{:L('common_web_title')}</title>
+
+<link href="__PUBLIC__/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+<script src="__PUBLIC__/js/jquery-1.7.2.min.js" type="text/javascript"></script>
+<script src="__PUBLIC__/layer/layer.min.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/jquery.cookie.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/common.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/jquery.form.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(function(){
+	autoWindow();
+	getWeather();
+	//dropAlertBox();	
+});
+
+$(window).resize(function() {
+	autoWindow();	
+});
+
+</script>
+<include file="Public:commjs" />
+</head>
+
+<body scroll="no">
+<div id="allmap"></div>
+<div class="content_all2">
+<table border="0" cellpadding="0" cellspacing="0" width="100%" height="111" class="">
+<tr>
+	<td id="t_row_1" style="height:111px;">
+		<include file="Public:header_box1" />
+		<div class="header_box2">
+			<include file="header_toolbar" />
+			<div class="toolbar_search">
+				<form id="frmSearch" method="get" action="">
+				<input autofocus="autofocus" id="keyword" name="keyword" type="text" placeholder="Keywords">
+				<div class="btnPost"><a href="javascript:void(0);" onclick="javascript:$('#frmSearch').submit();"></a></div>
+				</form>
+			</div>
+		</div>
+	</td>
+</tr>
+</table>
+</div>
+<div class="content_left2">
+<table border="0" cellpadding="0" cellspacing="0" class="" align="left">
+<tr>
+	<td id="t_row_2">
+	<table id="t_contnet" border="0" cellpadding="0" cellspacing="0" height="100%" class="">
+	<tr>
+		<td id="t_row_21" height="100%" width="232" class="leftbar">
+			<table id="leftbar" border="0" cellpadding="0" cellspacing="0" width="100%" height="100%" class="">
+			<tr>
+				<td width="100%" valign="top">
+					<volist id="vo" name="datalist">
+					<div class="btn4"><a href="javascript:void(0);" onclick="javascript:openWindow2('100%','100%','{:U('Webuser/edit_show?id='.$vo['id'].'')}','',false);">{$vo.elderly_name}</a></div>
+					</volist>
+				</td>
+			</tr>
+			</table>
+		</td>
+		<td id="t_row_22" height="100%" width="21" valign="middle"><div class="btn_switch"><a href="javascript:void(0);" onclick="javascript:switch_leftbar();">&nbsp;</a></div></td>
+	</tr>
+	</table>
+	</td>
+</tr>
+</table>
+</div>
+<div id="popup_window" class="popup_window" style="left:40%;">
+	<div id="popup_window_title" class="popup_window_title">&nbsp;</div>
+	<div id="popup_window_content" class="popup_window_content"></div>
+</div>
+</body>
+</html>

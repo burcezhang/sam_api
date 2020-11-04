@@ -1,0 +1,424 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak={:C('BAIDU_AK')}"></script>
+<script type="text/javascript" src="__PUBLIC__/js/convertor.js"></script>
+<script src="__PUBLIC__/js/common.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/jquery.form.js" type="text/javascript"></script>
+<script src="__PUBLIC__/layer/layer.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+var popup_action_box_show = false;
+var map;
+var returnData = eval('({$agedinfo})');//转换为json对象
+var flgMapEvent=false;
+var myGeoIcon = new BMap.Icon("__PUBLIC__/images/location_icon.png", new BMap.Size(40,51));
+function resize(){
+	var size = parent.getBrowerSize();
+	$('#wrap').width(size.width);
+	$('#wrap').height(size.height);
+	$('.videoListTable').width(size.width);
+	$('.videoListTable').height(size.height);
+	$('#allmap').width(size.width);
+	$('#allmap').height(size.height);
+}
+$(document).ready(function(e) {
+   /* var str=[];
+    str.push('<span class="search">');
+    str.push('<form action="" method="get" class="forms" id="fm1">');
+    str.push('<div class="searchBar ml50 fl">');
+    str.push('<input type="text" autofocus="autofocus" placeholder="{:L("common_ALL_SERASH_TITLE")}" name="keyword" id="keyword" value="{$keyword}" class="keyword" />');
+    str.push('<input type="submit" value="{:L("common_ALL_SERASH")}" class="btnSearch" />');
+    str.push('</div></form></span>');		
+    $('#bread').html(str.join(""));
+	*/
+	resize();	
+	if ( {$default_map_dj}=='2' )
+		initGoogleMap({:C('GOOGLE_INIT_LAT')},{:C('GOOGLE_INIT_LON')});
+	else
+		initBaiduMap({:C('BAIDU_INIT_LON')},{:C('BAIDU_INIT_LAT')});
+	dropAlertBox();
+	initAgedInfo();
+//	registerMapEvent(true);
+//	mapAddOverlay();
+});
+$(window).bind("resize",function(){resize();});
+function chkFrmGeoAdd()
+{
+	if($('#geo_name').val()==''){
+		//alert('geo_name');
+		return false;
+	}
+	if($('#radius').val()==''){
+		//alert('radius');
+		return false;
+	}
+	return true;
+}
+
+function closePopupBox(){
+	$('#popup_window_content').html("&nbsp;");
+	popup_action_box_show=false;
+}
+
+function initBaiduMapGeo(lon,lat){
+	if(isNaN(lon) || lon==0)lon={:C('BAIDU_INIT_LON')};
+	if(isNaN(lat) || lat==0)lat={:C('BAIDU_INIT_LAT')};
+	map = new BMap.Map("allmap");
+	var point = new BMap.Point(lon, lat);
+	map.centerAndZoom(point, 15);
+	map.enableScrollWheelZoom();    
+
+	var ctrl_nav = new BMap.NavigationControl({anchor:BMAP_ANCHOR_BOTTOM_RIGHT,type:BMAP_NAVIGATION_CONTROL_LARGE});
+	map.addControl(ctrl_nav);
+}
+function initGoogleMapGeo(lat, lon){
+	if(isNaN(lon) || lon==0)lon={:C('GOOGLE_INIT_LON')};
+	if(isNaN(lat) || lat==0)lat={:C('GOOGLE_INIT_LAT')};
+
+	var map_icon = "__PUBLIC__/images/location_icon.png";
+	var latlng = new google.maps.LatLng(lat, lon);
+	var options = {
+		zoom: 17,
+		center: latlng,
+		disableDefaultUI: true,
+		panControl: true,
+		zoomControl: true,
+		mapTypeControl: true,
+		scaleControl: true,
+		streetViewControl: false,
+		overviewMapControl: true,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	map = new google.maps.Map(document.getElementById("allmap"), options);
+	map.setZoom(17);
+	map.setCenter(new google.maps.LatLng(lat, lon));
+
+}
+
+function geocodeSearch(lon, lat){
+	var myGeo = new BMap.Geocoder();
+	var reTxt = '';
+	var pt= new BMap.Point(lon, lat);
+	myGeo.getLocation(pt, function(rs){
+		var addComp = rs.addressComponents;
+		reTxt += addComp.province + addComp.city + addComp.district + addComp.street + addComp.streetNumber;
+	});
+	return reTxt;
+}
+
+function registerMapEvent(flg){
+	if(flg){
+		if ( {$default_map_dj}=='2' )
+		{
+	  	google.maps.event.addListener(map, "click", geo_add );
+		}
+		else
+		{
+			map.addEventListener("click",geo_add);
+		}
+		$('.geo_toolbar_trace_nav').css('display','none');
+	}else{
+		if ( {$default_map_dj}=='2' )
+		{
+	  	google.maps.event.clearListeners(map, "click" );
+		}
+		else
+		{
+			map.removeEventListener("click", geo_add);
+		}
+		$('.geo_toolbar_trace_nav').css('display','');
+	}
+	flgMapEvent = flg;
+}
+
+function getGpsFixType(ft){
+	switch(ft){
+		case 0:
+			return '{:L("lb_gps_fix_type_0")}';
+		break;
+		case 1:
+			return '{:L("lb_gps_fix_type_1")}';
+		break;
+		case 2:
+			return '{:L("lb_gps_fix_type_2")}';
+		break;
+		case 3:
+			return '{:L("lb_gps_fix_type_3")}';
+		break;
+		default:
+			return '{:L("lb_gps_fix_type_na")}';
+	}
+}
+function addClickHandler(content,marker){
+	marker.addEventListener("click",function(e){
+		openInfo(content,e)}
+	);
+}
+function openInfo(content,e){
+	var opts = {
+				width : 300,    
+				height: 80,    
+				title : "" , 
+				enableMessage:false
+			   };
+	var p = e.target;
+
+	var point =new BMap.Point(p.getPosition().lng, p.getPosition().lat);
+		var myGeo = new BMap.Geocoder();
+		myGeo.getLocation(point, function(rs){
+			var addComp = rs.addressComponents;
+			var txtAddress = addComp.province + addComp.city + addComp.district + addComp.street + addComp.streetNumber;
+			content=content.replace(/ADDRESS/, txtAddress)
+			var infoWindow = new BMap.InfoWindow(content,opts);  
+			map.openInfoWindow(infoWindow,point);
+		});
+}
+
+function geoLocation(lon,lat){
+	BMap.Convertor.translate(new BMap.Point(lon,lat),0,function(point){
+		map.centerAndZoom(point, 15);
+	});
+}
+
+
+function mapAddOverlay(){
+	if(returnData.agedid>0 && returnData.geo>0){
+
+		var igeo=0;
+		var lon = returnData.geolist[igeo].area_lon;
+		var lat = returnData.geolist[igeo].area_lat;
+
+		translateCallback = function (point){
+			if(igeo==0){
+				if ( {$default_map_dj}=='2' )
+					initGoogleMapGeo(point.lat,point.lng);
+				else
+					initBaiduMapGeo(point.lng,point.lat);
+				registerMapEvent(true);
+			}
+			var circle= new BMap.Circle(point,returnData.geolist[igeo].radius,{strokeColor:"#ff0000", strokeWeight:2, strokeOpacity:0.5});
+			map.addOverlay(circle);
+			circle.show();
+
+			var opts = {
+				position : point, 
+				offset   : new BMap.Size(0, 0) 
+			};
+			var label = new BMap.Label('{:L("lb_title_geo_name")}:'+returnData.geolist[igeo].geo_name+',{:L("lb_title_radius")}:'+returnData.geolist[igeo].radius, opts); 
+			label.setStyle({
+				color : "red",
+				fontSize : "12px",
+				height : "20px",
+				lineHeight : "20px",
+				fontFamily:"微软雅黑"
+			});
+			map.addOverlay(label);
+
+			igeo++;			
+			if(igeo < returnData.geo){
+				var lon = returnData.geolist[igeo].area_lon;
+				var lat = returnData.geolist[igeo].area_lat;
+				BMap.Convertor.translate(new BMap.Point(lon,lat),0,translateCallback);
+			}
+		}
+		BMap.Convertor.translate(new BMap.Point(lon,lat),0,translateCallback);
+
+		return true;
+
+	}else{
+		return false;
+	}
+}
+function initAgedInfo(){
+
+	$('#btn_agedid_'+returnData.agedid).attr('class','btn3');
+
+	if(mapAddOverlay()){
+
+	}else{
+		if(returnData.agedid>0) layer.alert('{:L("alert_get_geo_fail")}');
+	}
+}
+
+function Round(n, pos) {
+	var digits = Math.pow(10, pos);
+
+	var sign = 1;
+	if (n < 0) {
+		sign = -1;
+	}
+
+	n = n * sign;
+	var num = Math.round(n * digits) / digits;
+	num = num * sign;
+
+	return num.toFixed(pos);
+}
+
+function geo_add(e){
+	if(popup_action_box_show) return;
+
+	BMap.Convertor.translate(new BMap.Point(e.point.lng,e.point.lat),0,function(point){
+alert("geo_add-2");
+		var lon=Round(2*e.point.lng-point.lng,7);
+		var lat= Round(2*e.point.lat-point.lat,7);
+
+		if(returnData.agedid>0){
+			var postUrl = "{:U('Webuser/geoadd')}";
+			var sHtml='<form id="frmGeoAdd" method="post" action="'+postUrl+'">' +
+			'<div class="info_box" style="width:350px;height:200px;background:#ffffff;">' +
+			'	<div class="info_box_title">' +
+			'		<div class="info_box_title_icon"><img src="__PUBLIC__/images/window_icon_add.png" /></div>' +
+			'		<div class="info_box_title_text">{:L("lb_popup_title_addnew")} ({:L("lb_popup_title_lon")}:'+lon+' {:L("lb_popup_title_lan")}:'+lat+')</div>' +
+			'	</div>' +
+			'	' +
+			'	<div class="info_box_footer">' +
+			'		<div class="info_box_footer_btn1"><a href="javascript:void(0);" onclick="javascript:$(\'#frmGeoAdd\').submit();">{:L("lb_btn_enter")}</a></div>' +
+			'		<div class="info_box_footer_btn2"><a href="javascript:void(0);" onclick="javascript:closePopupBox();">{:L("lb_btn_cancel")}</a></div>' +
+			'	</div>' +
+			'	<input type="hidden" name="area_lon" value="'+lon+'" />' +
+			'   <input type="hidden" name="area_lat" value="'+lat+'" />' +
+			'   <input type="hidden" name="agedid" value="'+returnData.agedid+'" />' +
+			'	<div class="info_box_content">' +
+			'		<div class="h50">&nbsp;</div>' +
+			'		<div class="h30">' +
+			'			<div class="w100 h30 float_left" style="color:black">{:L("lb_popup_title_geo_name")}</div>' +
+			'			<div class="float_left"><input type="text" id="geo_name" name="geo_name" /></div>' +
+			'		</div>' +
+			'		<div class="h20">&nbsp;</div>' +
+			'		<div class="h30">' +
+			'			<div class="w100 h30 float_left" style="color:black">{:L("lb_popup_title_radius")}</div>' +
+			'			<div class="float_left"><input type="text" id="radius" name="radius" /></div>' +
+			'		</div>' +
+			'	</div>' +
+			'	' +
+			'</div>' +
+			'</form>';
+			$('#popup_window_content').html(sHtml);
+			popup_action_box_show = true;
+
+			var ajax_option={
+				url:postUrl,
+				success:function(data){
+					if(data.error==0){
+						alert(data.info+'{:L("alert_reg_success")}');
+						window.location.href=window.location.href;
+					}else if(data.error==2){
+						alert('{:L("alert_geo_limit")}');
+					}else{
+						alert(data.info+'{:L("alert_reg_failed")}');
+					}
+				}
+			};
+			$('#frmGeoAdd').submit(function() {
+				if(chkFrmGeoAdd()==true){
+					$(this).ajaxSubmit(ajax_option);
+				}
+				return false;
+			});
+		}
+
+	});
+}
+
+function geo_delete(geoid){
+	$.layer({
+		shade: [0],
+		area: ['auto','auto'],
+		dialog: {
+			msg: '{:L("prompt_delete")}',
+			btns: 2,
+			type: 4,
+			btn: ['{:L("lb_btn_enter")}','{:L("lb_btn_cancel")}'],
+			yes: function(){
+				$.post("{:U('Webuser/geodelete')}",{id:geoid},function(reData){
+					if(reData.error==0){
+						//layer.alert(reData.info+'删除成功', 1, function(){location.reload();});
+						alert(reData.info+'{:L("alert_reg_success")}');
+						location.reload();
+					}else{
+						//layer.msg(reData.info+'删除失败', 3, 1);
+						alert(reData.info+'{:L("alert_reg_failed")}');
+					}
+				});
+
+			}, no: function(){
+				//layer.msg('被取消', 3, 1);
+			}
+		}
+	});
+
+}
+function geo_list(){
+	if(popup_action_box_show) return;
+	if(returnData.agedid>0){
+		var sHtml='' +
+		'<div class="info_box" style="width:350px;background:#ffffff;">' +
+		'	<div class="info_box_title">' +
+		'		<div class="info_box_title_icon"><img src="__PUBLIC__/images/toolbar_icon_geo.png" width="25" height="25" /></div>' +
+		'		<div class="info_box_title_text">{:L("lb_title_geo_title")}</div>' +
+		'	</div>' +
+		'	' +
+		'	<div class="info_box_footer">' +
+		'		<div class="info_box_footer_btn1"><a href="javascript:void(0);" onclick="javascript:closePopupBox();">{:L("lb_popup_title_addnew")}</a></div>' +
+		'		<div class="info_box_footer_btn2"><a href="javascript:void(0);" onclick="javascript:closePopupBox();">{:L("lb_btn_cancel")}</a></div>' +
+		'	</div>' +
+		'	' +
+		'	<div class="info_box_content">' +
+		'		<div class="h50">&nbsp;</div>';
+		for(var igeo=0;igeo<returnData.geo;igeo++){
+		sHtml+='<div class="txtbox2" style="width:95%;margin-bottom:10px;">' +
+		'			<div class="w150 float_left link25"><a href="javascript:void(0);" onclick="javascript:geoLocation('+returnData.geolist[igeo].area_lon+','+returnData.geolist[igeo].area_lat+');">&nbsp;&nbsp;{:L("lb_popup_title_geo_name")}：'+returnData.geolist[igeo].geo_name+'</a></div>' +
+		'			<div class="w130 float_left link25"><a href="javascript:void(0);" onclick="javascript:geoLocation('+returnData.geolist[igeo].area_lon+','+returnData.geolist[igeo].area_lat+');">&nbsp;&nbsp;{:L("lb_popup_title_radius")}：'+returnData.geolist[igeo].radius+'</a></div>' +
+		'			<div class="w40 float_right link25"><a href="javascript:void(0);" onclick="javascript:geo_delete('+returnData.geolist[igeo].id+');"><img src="__PUBLIC__/images/delete_icon.png" style="max-height:24px" /></a></div>' +
+		'		</div>';
+		}
+		sHtml+='<div class="clear10"></div><div class="clear10"></div><div class="clear10"></div><div class="clear10"></div>'+
+		'	</div>' +
+		'	' +
+		'</div>' +
+		'';
+		$('#popup_window_content').html(sHtml);
+		popup_action_box_show = true;
+		if(flgMapEvent==false){
+			registerMapEvent(true);
+			mapAddOverlay();
+		}
+	}
+}
+</script>
+<include file="Public:commjs2" />
+</head>
+<body>
+	<div id="wrap" class="videoList" style="padding:0;">
+		<!--<div class="crumbs mb5" id="bread"></div>-->
+		<div class="videoListTable">
+        <div id="allmap"></div>
+        
+        <div class="content_right1">
+            <volist id="vo" name="datalist">
+            <div id="btn_agedid_{$vo.id}" class="btn4"><a href="{:U('Webuser/geo?id='.$vo['id'].'')}">{$vo.elderly_name}</a></div>
+            </volist>
+	    </div>
+		</div>
+    </div>
+<div id="popup_window" class="popup_window" style="">
+	<div id="popup_window_title" class="popup_window_title">&nbsp;</div>
+	<div id="popup_window_content" class="popup_window_content"></div>
+</div>
+<div class="geo_toolbar">
+	<div class="geo_toolbar_icon1"><a href="javascript:void(0);" onclick="javascript:geo_list();">SHOW FENCE</a></div>
+</div>
+
+</body>
+</html>

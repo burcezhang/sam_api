@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script src="__PUBLIC__/js/jquery.form.js" type="text/javascript"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+
+<script src="__PUBLIC__/uploadify/jquery.uploadify.min.js" type="text/javascript"></script>
+<link href="__PUBLIC__/uploadify/uploadify.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<div class="editBar" style="position:absolute; right:0; bottom:-5px;">');
+    str.push('<a href="javascript:void(0);" title="{:L("common_ALL_RETURN")}" onclick="Result();" class="iBack">{:L("common_ALL_RETURN")}</a>');
+    str.push('<a href="javascript:void(0);" title=">{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a></div>');
+    $('#bread').html(str.join(""));
+	
+	uploadIfy();
+	
+	
+	var ajax_option={
+		url:"{:U('Inventory/import')}",
+		success:function(data){
+			if(data.error==0){
+				alert(data.info+'{:L("alert_reg_success")} {:L("alert_row_count1")}'+data.icount+' {:L("alert_row_count2")}'+data.iexists+' {:L("alert_row_count3")}'+data.iimport+'');
+				//window.location.href=window.location.href;
+				$('#sp_file_name').html('');				
+			}else{
+				alert(data.info+'{:L("alert_reg_failed")}');
+			}
+		}
+	};
+	$('#frmDevice').submit(function() {
+        if(chkFrmImport()==true){
+			$(this).ajaxSubmit(ajax_option);
+		}
+        return false;
+    });
+});
+function chkFrmImport(){
+	if($('#file_src').val()==''){
+		alert('{:L("prompt_upload")}');
+		return false;
+	}
+	return true;
+}
+function uploadIfy(){
+	$('#flie_upload').uploadify({
+        'swf'      : '__PUBLIC__/uploadify/uploadify.swf',
+        'uploader' : '{:U("Index/uploadify")}',
+        'buttonText' : '. . .',
+		'width' : 80,
+		'height': 30,
+        'onUploadSuccess' : function(file, data, response) {
+			var dataObj=eval("("+data+")");//转换为json对象
+			if(dataObj.error==1){
+				alert(dataObj.info);
+			}else{
+				$('#file_src').attr('value','{:C("UPLOAD_DIR")}'+dataObj.info.Filedata.savename);
+				$('#sp_file_name').html('--'+dataObj.info.Filedata.savename);
+			}
+        }
+    });
+}
+
+</script>
+</head>
+<body>
+	<div id="wrap" class="videoList">
+            <div class="crumbs mb5" id="bread" style="position:relative;"></div>
+<div class="edit">
+  <div class="editContent">
+  <form id="frmDevice" method="post" action="{:U('Inventory/import')}">
+      <table width="100%" >
+        <tbody>
+          <tr>
+            <th width="240" align="left"><b>{:L("lb_import_title")}</b></th>
+          </tr>
+          <tr>
+            <th align="left"><input type="hidden" id="file_src" name="file_src" />
+              <div class="upload_avatar" style="margin:0px 0px 0px 0px;text-align:center;">
+                <input id="flie_upload" name="flie_upload" type="file" multiple value="" />
+              </div></th>
+          </tr>
+          <tr>
+            <td class="bd pd"><div class="btn2"><a href="javascript:void(0);" onclick="javascript:$('#frmDevice').submit();">{:L("lb_btn_import")}</a></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+</body>
+</html>

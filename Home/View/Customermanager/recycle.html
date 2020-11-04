@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/select.min.js"></script>
+<script src="__PUBLIC__/layer/layer.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<span class="search">');
+    str.push('<form action="" method="get" class="forms" id="fm1">');
+    str.push('<div class="searchBar ml50 fl">');
+    str.push('<input type="text" autofocus="autofocus" placeholder="{:L("common_ALL_SERASH_TITLE")}" name="keyword" id="keyword" value="{$keyword}" class="keyword" />');
+    str.push('<input type="submit" value="{:L("common_ALL_SERASH")}" class="btnSearch" />');
+    str.push('</div></form></span>');		
+    $('#bread').html(str.join(""));
+});
+function recycle_config(uid){
+	$.layer({
+		shade: [0],
+		area: ['auto','auto'],
+		dialog: {
+			msg: '{:L("prompt_recycle")}',
+			btns: 2,
+			type: 4,
+			btn: ['{:L("lb_btn_enter")}','{:L("lb_btn_cancel")}'],
+			yes: function(){
+				$.post("{:U('Customermanager/recycle_todo')}",{id:uid},function(returnData){
+					if(returnData.error>0){
+						layer.msg('{:L("alert_reg_failed")}', 3, 1);
+					}else{
+						location.reload();
+					}
+				});
+				
+			}, no: function(){
+				//layer.msg('被取消', 3, 1);
+			}
+		}
+	});
+}
+
+function deleteinfo(uid){
+	$.layer({
+		shade: [0],
+		area: ['auto','auto'],
+		dialog: {
+			msg: '{:L("prompt_delete")}',
+			btns: 2,
+			type: 4,
+			btn: ['{:L("lb_btn_enter")}','{:L("lb_btn_cancel")}'],
+			yes: function(){
+				$.post("{:U('Customermanager/userdelete_todo')}",{id:uid},function(returnData){
+					if(returnData.error>0){
+						layer.msg('{:L("alert_reg_failed")}', 3, 1);
+					}else{
+						location.reload();
+					}
+				});
+				
+			}, no: function(){
+				//layer.msg('被取消', 3, 1);
+			}
+		}
+	});
+}
+</script>
+</head>
+<body>
+	<div id="wrap" class="videoList">
+	<div class="crumbs mb5" id="bread"></div>
+	<div class="videoListTable">
+    <div class="clearb">
+        <div class="editBar fr H40">
+        	<a href="javascript:void(0);" title="{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a>
+        </div>
+    </div>
+    <table width="100%" id="J-rowColor">
+        <thead>
+            <tr>
+		<th>{:L("lb_list_title_item_no")}</th>
+		<th>{:L("lb_list_title_elderly_name")}</th>
+		<th>{:L("lb_list_title_age")}</th>
+		<th>{:L("lb_list_title_address")}</th>
+		<th>{:L("lb_list_title_phone")}</th>
+		<th>{:L("lb_list_title_register_date")}</th>
+		<th>{:L("lb_list_title_termination_date")}</th>
+		<th>{:L("lb_list_title_action")}</th>
+            </tr>
+        </thead>
+        <tbody id="box_list">
+        <volist id="vo" name="datalist" key="k">
+			<tr id="row{$vo.id}">
+                <td>{$k}</td>
+                <td>{$vo.elderly_name}</td>
+                <td>{$vo.age}</td>
+                <td>{$vo.address}</td>
+                <td>{$vo.phone}</td>
+                <td>{$vo.register_date|toDate=###,'Y-m-d'}</td>
+                <td>{$vo.termination_date|toDate=###,'Y-m-d'}</td>
+				<td align="center">
+				<a class="iconedit" href="javascript:void(0);" onclick="javascript:recycle_config('{$vo.id}');">
+                	<img src="__PUBLIC__/res/images/iconrecycle.png" alt="{:L("lb_btn_delete")}" width="26" height="26">
+                </a>
+				<a class="icondel" href="javascript:void(0);" onclick="javascript:deleteinfo({$vo['id']},'{$vo.device_sn}');">
+                	<img src="__PUBLIC__/res/images/icondel.png" alt="{:L("lb_btn_delete")}" width="26" height="26">
+                </a>
+                
+				</td>
+			</tr>
+			</volist>
+        </tbody>
+    </table>    
+			<div class="pager">{$page}</div>
+		</div>
+      </div>
+</div>
+<script type="text/javascript">
+function rowColor(){
+	if(document.getElementById('J-rowColor')){
+		var orowColor=document.getElementById('J-rowColor').rows;
+		var i;
+		for(i=0; i<orowColor.length;i++){   
+			if(i%2==0){   
+				orowColor[i].style.background = "#E5E5E5";  
+			}   
+		}  
+	}
+}   
+rowColor();
+</script>
+</body>
+</html>

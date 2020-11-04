@@ -1,0 +1,380 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<div class="editBar" style="position:absolute; right:0; bottom:-5px;">');
+    str.push('<a href="javascript:void(0);" title="{:L("common_ALL_RETURN")}" onclick="Result();" class="iBack">{:L("common_ALL_RETURN")}</a>');
+    str.push('<a href="javascript:void(0);" title=">{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a></div>');
+    $('#bread').html(str.join(""));
+	
+	
+});
+function mfSubmit(){
+	$.ajax({
+		cache: true,
+		type: "POST",
+		url:"{:U('Admin/defvalue')}",
+		data:$('#frmReg').serialize(),// 你的formid
+		async: false,
+		error: function(request) {
+			alert("Connection error");
+		},
+		success: function(data) {
+			alert(data.info);
+		}
+	});	
+}
+</script>
+
+</head>
+<body>
+<div id="wrap" class="videoList">
+<div class="crumbs mb5" id="bread" style="position:relative;"></div>
+<div class="edit">
+  <div class="editContent">
+    <form id="frmReg" method="post">
+    <input type="hidden" id="id" name="id" value="{$varinfo['id']}" />
+      <table width="100%" >
+        <tbody>
+          <tr>
+            <td width="100"><b>{:L('lb_default_map')}</b></td>
+            <td width="420"><select id="default_map" name="default_map">
+              <option value="baidu" {$varinfo['default_map']=='baidu'?'selected':''}>Baidu</option>
+              <option value="google" {$varinfo['default_map']=='google'?'selected':''}>Google</option>
+            </select></td>
+            <td width="100">&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr class="bg">
+            <td colspan="2"><b>{:L('lb_gps_send_period')}</b></td>
+            <td colspan="2"><b>{:L('lb_action_period')}</b></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_time_space1')}：</td>
+            <td><input name="device_set7[TIME1]" type="text" id="device_set7_time1" value="{$varinfo['device_set7']['TIME1']}" />
+              {:L('lb_minute_title')}
+            <input type="hidden" id="device_set7_default_flg" name="device_set7[default_flg]" value="Y" /></td>
+            <td>{:L('lb_time_title1')}：</td>
+            <td><input type="text" id="device_set8_time1" name="device_set8[TIME1]" value="{$varinfo['device_set8']['TIME1']|toDate=###,"H:i"}" />
+            <input type="hidden" id="device_set8_default_flg" name="device_set8[default_flg]" value="Y" /></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_time_space2')}：</td>
+            <td><input name="device_set7[TIME2]" type="text" id="device_set7_time2" value="{$varinfo['device_set7']['TIME2']}" />
+              {:L('lb_minute_title')}</td>
+            <td>{:L('lb_time_title2')}：</td>
+            <td><input type="text" id="device_set8_time2" name="device_set8[TIME2]" value="{$varinfo['device_set8']['TIME2']|toDate=###,"H:i"}" /></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_time_space3')}：</td>
+            <td><input name="device_set7[TIME3]" type="text" id="device_set7_time3" value="{$varinfo['device_set7']['TIME3']}" />
+              {:L('lb_minute_title')}</td>
+            <td>{:L('lb_time_title3')}：</td>
+            <td><input type="text" id="device_set8_time3" name="device_set8[TIME3]" value="{$varinfo['device_set8']['TIME3']|toDate=###,"H:i"}" /></td>
+          </tr>
+          <tr class="bg">
+            <td colspan="2"><b>{:L('lb_get_temperature_time_space')}</b></td>
+            <td colspan="2"><b>{:L('lb_set_temperature_high_low')}</b></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_time_space1')}：</td>
+            <td><input name="device_set9[TIME1]" type="text" id="device_set9_time1" value="{$varinfo['device_set9']['TIME1']}" />
+              {:L('lb_minute_title')}
+            <input type="hidden" id="device_set9_default_flg" name="device_set9[default_flg]" value="Y" /></td>
+            <td>{:L('lb_temperature_high')}：</td>
+            <td><input type="hidden" id="device_set10_default_flg" name="device_set10[default_flg]" value="Y" />
+              <input type="text" id="device_set10_low_t" name="device_set10[LOW_T]" value="{$varinfo['device_set10']['LOW_T']}" /></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_time_space2')}：</td>
+            <td><input name="device_set9[TIME2]" type="text" id="device_set9_time2" value="{$varinfo['device_set9']['TIME2']}" />
+              {:L('lb_minute_title')}</td>
+            <td>{:L('lb_temperature_low')}：</td>
+            <td><input type="text" id="device_set10_hight_t" name="device_set10[HIGHT_T]" value="{$varinfo['device_set10']['HIGHT_T']}" /></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_time_space3')}：</td>
+            <td><input name="device_set9[TIME3]" type="text" id="device_set9_time3" value="{$varinfo['device_set9']['TIME3']}" />
+              {:L('lb_minute_title')}</td>
+            <td>{:L('lb_temperature_send_period')}：</td>
+            <td><input type="text" id="device_set10_method" name="device_set10[METHOD]" value="{$varinfo['device_set10']['METHOD']}" /></td>
+          </tr>
+          <tr class="bg">
+            <td colspan="2"><b>{:L('lb_tracking_alert_period')}</b></td>
+            <td><b>{:L('lb_agps_period')}</b></td>
+            <td><span class="float_left">
+              <input name="device_set15[arg]" type="checkbox" id="device_set15_arg" value="on" <if condition="($varinfo['device_set15']['arg'] eq 'on')">checked="checked"<else />''</if> />
+              <input type="hidden" id="device_set15_default_fl2" name="device_set15[default_flg]" value="Y" />
+            </span></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_time_space1')}：</td>
+            <td colspan="3"><input type="hidden" id="device_set14_default_flg" name="device_set14[default_flg]" value="Y" />
+              <input name="device_set14[TIME1]" type="text" id="device_set14_time1" value="{$varinfo['device_set14']['TIME1']}" />
+              {:L('lb_minute_title')}</td>
+          </tr>
+          <tr>
+            <td>{:L('lb_time_space2')}：</td>
+            <td colspan="3"><input name="device_set14[TIME2]" type="text" id="device_set14_time2" value="{$varinfo['device_set14']['TIME2']}" />
+              {:L('lb_minute_title')}</td>
+          </tr>
+          <tr>
+            <td>{:L('lb_time_space3')}：</td>
+            <td colspan="3"><input name="device_set14[TIME3]" type="text" id="device_set14_time3" value="{$varinfo['device_set14']['TIME3']}" />
+              {:L('lb_minute_title')}</td>
+          </tr>
+          <tr class="bg">
+            <td colspan="2"><b>{:L('lb_device_set1_title')}</b></td>
+            <td colspan="2">&nbsp;</td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg1')}</td>
+            <td>
+            <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg1]" id="device_set1_arg1_{$i}" <if condition="(intval($varinfo['device_set1']['arg1']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            <input type="hidden" id="device_set1_default_flg" name="device_set1[default_flg]" value="Y" />
+            </td>
+            <td>{:L('lb_device_set1_arg2')}</td>
+            <td>
+            <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg2]" id="device_set1_arg2_{$i}"  <if condition="(intval($varinfo['device_set1']['arg2']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg4')}</td>
+            <td>
+            <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg4]" id="device_set1_arg4_{$i}"  <if condition="(intval($varinfo['device_set1']['arg4']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+			</td>
+            <td>{:L('lb_device_set1_arg5')}</td>
+            <td>
+            <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg5]" id="device_set1_arg5_{$i}"  <if condition="(intval($varinfo['device_set1']['arg5']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg6')}</td>
+            <td>
+            <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg6]" id="device_set1_arg6_{$i}"  <if condition="(intval($varinfo['device_set1']['arg6']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+           </td>
+            <td>{:L('lb_device_set1_arg3')}</td>
+            <td>
+            <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg3]" id="device_set1_arg3_{$i}"  <if condition="(intval($varinfo['device_set1']['arg3']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg12')}</td>
+            <td>
+            <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg12]" id="device_set1_arg12_{$i}"  <if condition="(intval($varinfo['device_set1']['arg12']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+            <td>{:L('lb_device_set1_arg7')}</td>
+            <td>
+            <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg7]" id="device_set1_arg7_{$i}"  <if condition="(intval($varinfo['device_set1']['arg7']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg8')}</td>
+            <td>
+             <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg8]" id="device_set1_arg8_{$i}"  <if condition="(intval($varinfo['device_set1']['arg8']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+            <td>{:L('lb_device_set1_arg9')}</td>
+            <td>
+             <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg9]" id="device_set1_arg9_{$i}"  <if condition="(intval($varinfo['device_set1']['arg9']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg10')}</td>
+            <td>
+            <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg10]" id="device_set1_arg10_{$i}"  <if condition="(intval($varinfo['device_set1']['arg10']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+            <td>{:L('lb_device_set1_arg11')}</td>
+            <td>
+            <for start="1" end="4">
+              	<input type="radio" name="device_set1[arg11]" id="device_set1_arg11_{$i}"  <if condition="(intval($varinfo['device_set1']['arg11']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+          </tr>
+          <tr class="bg">
+            <td colspan="2"><b>{:L('lb_device_set2_title')}</b></td>
+            <td colspan="2">&nbsp;</td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg1')}</td>
+            <td>
+            <for start="0" end="4">
+              <input type="radio" name="device_set2[arg1]" id="device_set2_arg1_{$i}"  <if condition="(intval($varinfo['device_set2']['arg1']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+              <input type="hidden" id="device_set2_default_flg" name="device_set2[default_flg]" value="Y" /></td>
+            <td>{:L('lb_device_set1_arg2')}</td>
+            <td>
+            <for start="0" end="4">
+              	<input type="radio" name="device_set2[arg2]" id="device_set2_arg2_{$i}" <if condition="(intval($varinfo['device_set2']['arg2']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg4')}</td>
+            <td>
+            <for start="0" end="4">
+              	<input type="radio" name="device_set2[arg4]" id="device_set2_arg4_{$i}" <if condition="(intval($varinfo['device_set2']['arg4']) eq $i)">checked<else />''</if>  value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+            <td>{:L('lb_device_set1_arg5')}</td>
+            <td>
+            <for start="0" end="4">
+              	<input type="radio" name="device_set2[arg5]" id="device_set2_arg5_{$i}" <if condition="(intval($varinfo['device_set2']['arg5']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+           </td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg6')}</td>
+            <td>
+            <for start="0" end="4">
+              	<input type="radio" name="device_set2[arg6]" id="device_set2_arg6_{$i}" <if condition="(intval($varinfo['device_set2']['arg6']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+            <td>{:L('lb_device_set1_arg3')}</td>
+            <td>
+            <for start="0" end="4">
+              	<input type="radio" name="device_set2[arg3]" id="device_set2_arg3_{$i}" <if condition="(intval($varinfo['device_set2']['arg3']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg12')}</td>
+            <td>
+            <for start="0" end="4">
+              	<input type="radio" name="device_set2[arg12]" id="device_set2_arg12_{$i}" <if condition="(intval($varinfo['device_set2']['arg12']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+            <td>{:L('lb_device_set1_arg7')}</td>
+            <td>
+             <for start="0" end="4">
+              	<input type="radio" name="device_set2[arg7]" id="device_set2_arg7_{$i}" <if condition="(intval($varinfo['device_set2']['arg7']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg8')}</td>
+            <td>
+            <for start="0" end="4">
+              	<input type="radio" name="device_set2[arg8]" id="device_set2_arg8_{$i}" <if condition="(intval($varinfo['device_set2']['arg8']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+           </td>
+            <td>{:L('lb_device_set1_arg9')}</td>
+            <td><for start="0" end="4">
+              	<input type="radio" name="device_set2[arg9]" id="device_set2_arg9_{$i}" <if condition="(intval($varinfo['device_set2']['arg9']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_device_set1_arg10')}</td>
+            <td>
+            <for start="0" end="4">
+              	<input type="radio" name="device_set2[arg10]" id="device_set2_arg10_{$i}" <if condition="(intval($varinfo['device_set2']['arg10']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+            </td>
+            <td>{:L('lb_device_set1_arg11')}</td>
+            <td>
+            <for start="0" end="4">
+              	<input type="radio" name="device_set2[arg11]" id="device_set2_arg11_{$i}" <if condition="(intval($varinfo['device_set2']['arg11']) eq $i)">checked<else />''</if> value="{$i}" />
+              {:L('lb_device_set1_type'.$i)}
+            </for>
+           </td>
+          </tr>
+          <tr>
+            <td><b>{:L('lb_device_set3_title')}</b></td>
+            <td colspan="3"><input type="text" id="device_set3_day" name="device_set3[day]" value="{$varinfo['device_set3']['day']}" />
+              <input type="hidden" id="device_set3_default_flg" name="device_set3[default_flg]" value="Y" /></td>
+          </tr>
+          <tr class="bg">
+            <td colspan="4"><b>{:L('lb_set_price')}</b></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_set_price_sms')}</td>
+            <td><input type="text" id="service_price_sms" name="service_price[sms]" value="{$varinfo['service_price']['sms']}" /></td>
+            <td>{:L('lb_set_price_call')}</td>
+            <td><input type="text" id="service_price_call" name="service_price[call]" value="{$varinfo['service_price']['call']}" /></td>
+          </tr>
+          <tr class="bg">
+            <td colspan="4"><b>{:L('lb_set_system')}</b></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_set_system_url')}</td>
+            <td><input type="text" id="device_set6" name="device_set6" value="{$varinfo['device_set6']}" /></td>
+            <td>{:L('lb_set_system_port')}</td>
+            <td><input type="text" id="device_set5" name="device_set5" value="{$varinfo['device_set5']}" /></td>
+          </tr>
+          <tr>
+            <td>{:L('lb_set_system_emergency_no')}1</td>
+            <td><input type="text" id="device_set4_NO1" name="device_set4[NO1]" value="{$varinfo['device_set4']['NO1']}" /></td>
+            <td>{:L('lb_set_system_emergency_no')}2</td>
+            <td><input type="text" id="device_set4_NO2" name="device_set4[NO2]" value="{$varinfo['device_set4']['NO2']}" /></td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td colspan="3">&nbsp;</td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td colspan="3"><input type="button" value="{:L("lb_btn_enter")}" class="btnBlue" onClick="mfSubmit()" />
+              <input type="reset" value="{:L("lb_btn_cancel")}" onclick="Result();" class="btnGray ml20" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+</body>
+</html>

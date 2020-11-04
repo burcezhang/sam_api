@@ -1,0 +1,6 @@
+		<div class="header_box1">
+			<div class="header_logo"><a href="{:U('Welcome/index')}">HOME</a></div>
+			<div class="header_weather"></div>
+			<div class="header_exit"><a href="{:U('Index/logout')}" onclick="javascript:return confirm('{:L('common_alert_exit')}');">{:L('common_btn_exit')}</a></div>
+			<div class="header_userinfo"><div id="user_online_status" class="user_online_status_01"></div>{:L('lb_user_title')} : {$userinfo.true_name}</div>
+		</div>

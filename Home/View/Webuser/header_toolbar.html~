@@ -1,0 +1,36 @@
+
+			<div id="toolbar_index" class="toolbar_icon">
+				<a href="{:U('Webuser/index')}"><img src="__PUBLIC__/images/toolbar_icon_user.png" /></a>
+				<div>{:L('lb_toolbar_index')}</div>
+			</div>
+			<div id="toolbar_gps" class="toolbar_icon">
+				<a href="{:U('Webuser/gps')}"><img src="__PUBLIC__/images/toolbar_icon_gps.png" /></a>
+				<div>{:L('lb_toolbar_gps')}</div>
+			</div>
+			<div id="toolbar_geo" class="toolbar_icon">
+				<a href="{:U('Webuser/geo')}"><img src="__PUBLIC__/images/toolbar_icon_geo.png" /></a>
+				<div>{:L('lb_toolbar_geo')}</div>
+			</div>
+			<div id="toolbar_edit" class="toolbar_icon">
+				<a href="{:U('Webuser/edit')}"><img src="__PUBLIC__/images/toolbar_icon_edit.png" /></a>
+				<div>{:L('lb_toolbar_edit')}</div>
+			</div>
+			<div id="toolbar_history" class="toolbar_icon">
+				<a href="{:U('Webuser/history')}"><img src="__PUBLIC__/images/toolbar_icon_history.png" /></a>
+				<div>{:L('lb_toolbar_history')}</div>
+			</div>
+			<--			
+			<div id="toolbar_setting" class="toolbar_icon">
+				<a href="{:U('Webuser/historylist')}"><img src="__PUBLIC__/images/toolbar_icon_history.png" /></a>
+				<div>{:L('lb_toolbar_history')}</div>
+			</div>
+			
+			<div id="toolbar_setting" class="toolbar_icon">
+				<a href="{:U('Webuser/setting')}"><img src="__PUBLIC__/images/toolbar_icon_setting.png" /></a>
+				<div>{:L('lb_toolbar_setting')}</div>
+			</div>
+                        <
+			<script type="text/javascript">
+			var action_name='{$Think.ACTION_NAME}';
+			$('#toolbar_'+action_name).addClass('toolbar_icon_hover');
+			</script>

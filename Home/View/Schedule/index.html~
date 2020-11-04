@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+
+<script type="text/javascript">
+//if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<div class="editBar" style="position:absolute; right:0; bottom:-5px;">');
+    //str.push('<a href="javascript:void(0);" title="{:L("common_ALL_RETURN")}" onclick="Result();" class="iBack">{:L("common_ALL_RETURN")}</a>');
+    str.push('<a href="javascript:void(0);" title=">{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a></div>');
+    $('#bread').html(str.join(""));
+	<if condition="($count[0] GT '0')">
+		<volist id="vo0" name="data[week0]" key="k0">
+		addSchedule(0,{$vo0|json_encode});
+		</volist>
+	</if>
+	<if condition="($count[1] GT '0')">
+		<volist id="vo1" name="data[week1]" key="k1">
+		addSchedule(1,{$vo1|json_encode});
+		</volist>
+	</if>
+	<if condition="($count[2] GT '0')">
+	<volist id="vo2" name="data[week2]" key="k2">
+		addSchedule(2,{$vo2|json_encode});
+	</volist>
+	</if>
+	<if condition="($count[3] GT '0')">
+	<volist id="vo3" name="data[week3]" key="k3">
+		addSchedule(3,{$vo3|json_encode});
+	</volist>
+	</if>
+	<if condition="($count[4] GT '0')">
+	<volist id="vo4" name="data[week4]" key="k4">
+		addSchedule(4,{$vo4|json_encode});
+	</volist>
+	</if>
+	<if condition="($count[5] GT '0')">
+	<volist id="vo5" name="data[week5]" key="k5">
+		addSchedule(5,{$vo5|json_encode});
+	</volist>
+	</if>
+	<if condition="($count[6] GT '0')">
+	<volist id="vo6" name="data[week6]" key="k6">
+		addSchedule(6,{$vo6|json_encode});
+	</volist>
+	</if>
+});
+var count={$count|json_encode};
+function addSchedule(k,dat){
+	var str=[];
+	str.push('<div class="clear0 H20 mb5" id="row'+count[k]+'"><div class="fl">{:L('lb_list_time')}：');
+    str.push('<input name="week'+k+'['+count[k]+'][Time1]" type="text" size="4" value="'+(dat?dat.Time1:'09:00')+'">');
+    str.push('<input name="week'+k+'['+count[k]+'][Time2]" type="text" size="4" value="'+(dat?dat.Time2:'10:00')+'">');
+    str.push('{:L('lb_list_logo')}：');
+    str.push('<select name="week'+k+'['+count[k]+'][Logo]"><option value="1" '+(dat&&dat.Logo=='1'?'selected':'')+'> 运行</option><option value="2" '+(dat&&dat.Logo=='2'?'selected':'')+'> 检查身体</option></select>');
+    str.push('{:L('lb_list_text')}：');
+    str.push('<input name="week'+k+'['+count[k]+'][Text]" type="text" size="15" value="'+(dat?dat.Text:'健身')+'">');
+    str.push('{:L('lb_list_status')}：');
+    str.push('<input name="week'+k+'['+count[k]+'][Status]" type="radio" value="1" '+(!dat||dat.Status=='1'?'checked':'')+'>');
+    str.push('{:L('lb_list_status_yes')}');
+    str.push('<input name="week'+k+'['+count[k]+'][Status]" type="radio" value="0" '+(dat&&dat.Status=='0'?'checked':'')+'>');
+    str.push('{:L('lb_list_status_no')}</div>');
+    str.push('<div class="fl addbtn delbtn ml5"><a class="del"  href="javascript:delSchedule('+k+','+count[k]+');"> - {:L('lb_btn_del')}</a></div></div>');
+	$('#week'+k).append(str.join("\n"));
+	count[k]++;
+}
+function delSchedule(k,n){
+	$('#week'+k).find('#row'+n).remove();
+}
+function mfSubmit(){
+	$.ajax({
+		cache: true,
+		type: "POST",
+		url:"{:U('Schedule/edit')}",
+		data:$('#frmReg').serialize(),//你的formid
+		async: false,
+		error: function(request) {
+			alert("Connection error");
+		},
+		success: function(data) {
+			alert(data.reason);
+		}
+	});	
+}
+</script>
+
+</head>
+<body>
+<div id="wrap" class="videoList">
+<div class="crumbs mb5" id="bread" style="position:relative;"></div>
+<div class="edit">
+  <div class="editContent">
+  	<form id="frmReg" method="post">
+	  <input type="hidden" id="id" name="id" value="{$data['id']}" />
+      <table width="100%" >
+        <tbody>
+          <tr class="bg">
+            <td width="60">{:L('lb_list_week0')}：</td>
+            <td><div class="fl addbtn"><a class="add" href="javascript:addSchedule(0);"> + {:L('lb_btn_add')}</a></div></td>
+          </tr>
+		  <tr>
+            <td valign="top"></td>
+            <td valign="top" id="week0"></td>
+          </tr>
+          <for start="1" end="7">
+          <tr class="bg">
+            <td>{:L('lb_list_week'.$i)}：</td>
+            <td><div class="fl addbtn"><a class="add" href="javascript:addSchedule({$i});"> + {:L('lb_btn_add')}</a></div></td>
+          </tr>
+		  <tr>
+            <td></td>
+            <td valign="top" id="week{$i}"></td>
+          </tr>
+          </for>          
+          <tr>
+            <td align="right" valign="top">&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td align="right" valign="top">&nbsp;</td>
+            <td class="bd pd">
+            <input type="button" value="{:L("lb_btn_enter")}" class="btnBlue" onClick="mfSubmit()" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+</body>
+</html>

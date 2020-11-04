@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>{:L('common_web_title')}</title>
+<style>html, body {overflow: hidden;}</style>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="__PUBLIC__/jscript/box/box.css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/main.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/box/box.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/event.js"></script>
+<script type="text/javascript">
+var menuid='{$id}';
+var submenuid='{$subid}';
+var subtitle='{$subtitle['title']}';
+var menuno={$menu_count};
+bread.name='{$menu_name}';
+window.onresize=resize;
+window.onload=function(){
+	Main=$('#mBrower').ccontentWindow;
+    $('#J-navList').css("width", menuno*90);
+    resize();
+    initMenu();
+	getWeather();
+	show_submenu(submenuid,subtitle);
+}
+function getWeather(){
+	$.post("{:U('Index/getBaiduWeather')}",{},function(returnData){
+		if(returnData.error==0){
+			var sWeather = returnData.currentCity + ' : ' + returnData.weather_data.weather + ' ' + returnData.weather_data.temperature;
+			$('.header_weather').html(sWeather);
+		}
+	});
+}
+function getBrowerSize(){
+	return 	{width:$('#content').width(),height:$('#content').height()}
+}
+function full(){
+	if(rHeight>0){
+		rHeight=0;
+    $('#J-menuTitle').attr('src','__PUBLIC__/res/images/menu_02.png');
+		$('#nav').hide();
+	}else{
+		rHeight=65;
+    $('#J-menuTitle').attr('src','__PUBLIC__/res/images/menu_01.png');
+		$('#nav').show();
+	}
+	resize();
+}
+</script>
+</head>
+
+<body>
+<iframe id="subBrower" name="subBrower" width="100%" height="30%" style="display:none;z-index:999;position:fixed;left:0px;top:0px;"></iframe>
+<!-- header start -->
+<div id="header">
+      <div id="logo" class="logo fl"><img src="__PUBLIC__/res/images/logo.png" alt="{@SITE_NAME}" height="44"></div>
+      <div class="header_weather"></div>
+      <div id="quee" class="announcement fl">
+    	<marquee>Welcome, AnyCare3.0</marquee>
+  	  </div>
+      <div class="loginBar fl"> 
+          <span class="loginwel" id="J-loginwel">Hello,{$userinfo['account']}<b class="triangle"></b></span>
+          <ul class="loginwelList" id="J-loginwelList">
+            <li> <a href="/admin~setpwd.html" target="mBrower">Change PW</a></li>
+            <li> <a href="/index~logout.html">LOG OUT</a> </li>
+          </ul>
+      </div>
+      
+      <div class="loading fl" id="loading" style="display:none;">请耐心等待....</div>
+    <div class="navborder"></div>
+</div>
+<!-- header end --> 
+
+<!-- menu start -->
+<div class="nav" id="menu_btn" style="width:155px;">
+    <a href="javascript:void(0);"  onClick="full()">
+    	<img src="__PUBLIC__/res/images/menu_01.png" alt="" id="J-menuTitle" class="fl" width="155">
+    </a>
+</div>
+<div class="nav" id="nav" style="left:155px;border-left: 1px solid #a0a0a0;">
+    <a id='move_left' href="javascript:void(0);" class="pre" onClick="moveMenu(true)"></a>
+    <div id="J-navList" class="navlist"  style="float:left;width: 94%;height: 65px;overflow: hidden; position: relative;">
+        <ul id="J-navList-ul" style="clear: both;height: 65px; width:2440px;list-style: none;top: 0px;left: 0px;display: block;position: relative;">
+        <volist id="vo" key='k' name="menu">
+            <if condition="($k eq 1)">
+                <li style="float: left;height: 65px;line-height: 65px;text-align: center;color: #000;">
+                <a href="javascript:void(0);" id="menu_btn_{$key}" onClick="show_menu('{$key}','{$vo}')" class="{$key} navCurrent">
+                <div style="margin-top:20px;">{$vo}</div>
+                </a>
+                </li>
+            <else />
+                <li style="float: left;height: 65px;line-height: 65px;text-align: center;color: #000;">
+                <a href="javascript:void(0);" id="menu_btn_{$key}" onClick="show_menu('{$key}','{$vo}')" class="{$key}">
+                <div style="margin-top:20px;">{$vo}</div>
+                </a>
+                </li>
+            </if>
+        </volist>
+      </ul>
+    </div>
+    <a id='move_right' href="javascript:void(0);" onClick="moveMenu(false)" class="next"></a>
+</div>
+<div id="menu">
+ <volist id="vo" name="submenu">
+  <a href='javascript:void(0);' url="/{$vo.func}" id="submenu_btn_{$key}" onClick="show_submenu('{$key}','{$vo.title}')">{$vo.title}</a>
+ </volist>
+</div>
+<a class="menuHide" id="J-menuHide"><img src="__PUBLIC__/res/images/menuhide.png" alt="" height="33"></a> 
+<!-- menu end --> 
+
+<!-- content start -->
+
+<div id="content" class="content" style="border-left: 1px solid #a0a0a0;">
+      <iframe id="mBrower" name="mBrower" allowtransparency="true" width="100%" height="100%" frameborder="0" scrolling="yes" style="overflow:visible;"></iframe>
+</div>
+</body>
+</html>

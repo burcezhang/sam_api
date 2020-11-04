@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*" />
+<title>{:L('common_web_title')}</title>
+
+<link href="__PUBLIC__/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+<script src="__PUBLIC__/js/jquery-1.9.1.min.js" type="text/javascript"></script>
+<script src="__PUBLIC__/layer/layer.min.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/jquery.cookie.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/common.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(function(){
+	autoWindow();
+	getWeather();
+	/*
+	$(".header_userinfo").hover(function(){
+		$(".header_userinfo_select").show();
+	},function(){
+		$(".header_userinfo_select").hide();
+	});
+	*/
+});
+$(window).resize(function() {
+	autoWindow();	
+});
+
+</script>
+<include file="Public:commjs" />
+</head>
+
+<body scroll="no">
+<div class="content_all">
+<table border="0" cellpadding="0" cellspacing="0" width="100%" height="100%" class="">
+<tr>
+	<td id="t_row_1" style="height:111px;">
+		<div class="header_box1">
+			<div class="header_logo"><a href="{:U('Welcome/index')}">HOME</a></div>
+			<div class="header_weather"></div>
+			<div class="header_exit"><a href="{:U('Index/logout')}" onclick="javascript:return confirm('{:L('common_alert_exit')}');">{:L('common_btn_exit')}</a></div>
+			<div class="header_userinfo"><div id="user_online_status" class="user_online_status_0{$userstate}"></div>{:L('lb_user_title')} : {$userinfo.service_no}
+				<!--
+				<div class="header_userinfo_select">
+					<li><a href="javascript:void(0);" onclick="javascript:setUserState(1,false);"><img src="__PUBLIC__/images/user_online_status_01.png" /></a></li>
+					<li><a href="javascript:void(0);" onclick="javascript:setUserState(2,false);"><img src="__PUBLIC__/images/user_online_status_02.png" /></a></li>
+					<li><a href="javascript:void(0);" onclick="javascript:setUserState(3,false);"><img src="__PUBLIC__/images/user_online_status_03.png" /></a></li>
+				</div>
+				-->
+			</div>
+		</div>
+		<div class="header_box2">
+			<include file="header_toolbar" />
+			<div class="toolbar_search"></div>
+		</div>
+	</td>
+</tr>
+<tr>
+	<td id="t_row_2" valign="top">
+	<table class="datalist" cellpadding="0" cellspacing="1" width="100%">
+	<tr>
+		<th>{:L('lb_data_alert_date')}</th>
+		<th>{:L('lb_data_alert_type')}</th>
+		<th>{:L('lb_data_user_id')}</th>
+		<th>{:L('lb_data_operator')}</th>
+		<th>{:L('lb_data_state')}</th>
+		<th>{:L('lb_data_setp')}</th>
+		<th>{:L('lb_data_start_date')}</th>
+		<th>{:L('lb_data_end_date')}</th>
+		<th>{:L('lb_data_sms')}</th>
+		<th>{:L('lb_data_voice')}</th>
+		<th>&nbsp;</th>
+	</tr>
+	<volist id="vo" name="datalist">
+	<tr>
+		<td>{$vo.alert_dt|toDate=###}</td>
+		<td>{$vo.alert_type|getAlertType=###}</td>
+		<td>{$vo.device_sn}</td>
+		<td>{$vo.operator_name}</td>
+		<td class="state_{$vo.status_flg}">{$vo.status_flg|getAlertState=###}</td>
+		<td class="state_{$vo.status_flg}">{$vo.step}</td>
+		<td>{$vo.start_time|toDate=###}</td>
+		<td>{$vo.end_time|toDate=###}</td>
+		<td><a href="javascript:void(0);" onclick="javascript:openWindow(500,300,'{:U('Index/showSmsLog?acttype=operator_finish&alertid='.$vo['id'].'')}');">{:L('lb_data_link_sms')}</a></td>
+		<td><a href="javascript:void(0);" onclick="javascript:openWindow(500,200,'{:U('Index/showCallVoice?alertid='.$vo['id'].'')}');">{:L('lb_data_link_voice')}</a></td>
+		<td>&nbsp;</td>
+	</tr>
+	</volist>
+	</table>
+	<div class="pager">{$page}</div>
+	</td>
+</tr>
+</table>
+</div>
+</body>
+</html>

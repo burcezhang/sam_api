@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<span class="search">');
+    str.push('<form action="" method="get" class="forms" id="fm1">');
+    str.push('<div class="searchBar ml50 fl">');
+    str.push('<input type="text" autofocus="autofocus" placeholder="{:L("common_ALL_SERASH_TITLE")}" name="keyword" id="keyword" value="{$keyword}" class="keyword" />');
+    str.push('<input type="submit" value="{:L("common_ALL_SERASH")}" class="btnSearch" />');
+    str.push('</div></form></span>');		
+    $('#bread').html(str.join(""));
+});
+function deleteinfo(locid){
+	if(confirm('{:L("prompt_delete")}')){
+		$.post("{:U('Admin/loc_delete')}",{id:locid},function(returnData){
+			if(returnData.error==0){
+				window.location.href = window.location.href;
+			}else{
+				alert('{:L("alert_get_data_fail")}');
+			}
+		});
+	}
+}
+</script>
+</head>
+<body>
+	<div id="wrap" class="videoList">
+		<div class="crumbs mb5" id="bread"></div>
+	<div class="videoListTable">
+    <div class="clearb">
+    	<div class="editBar fl H40">
+        	
+        </div>
+        <div class="editBar fr H40">
+        	<a href="javascript:void(0);" title="{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a>
+        </div>
+    </div>
+    <table width="100%" id="J-rowColor">
+        <thead>
+            <tr>
+                <th>{:L('lb_data_alert_date')}</th>
+                <th>{:L('lb_data_alert_type')}</th>
+                <th>{:L('lb_data_user_id')}</th>
+                <th>{:L('lb_data_operator')}</th>
+                <th>{:L('lb_data_state')}</th>
+                <th>{:L('lb_data_setp')}</th>
+                <th>{:L('lb_data_start_date')}</th>
+                <th>{:L('lb_data_end_date')}</th>
+                <th>{:L('lb_data_sms')}</th>
+                <th>{:L('lb_data_voice')}</th>
+            </tr>
+        </thead>
+        <tbody id="box_list">
+            <volist id="vo" name="datalist">
+            <tr>
+                <td align="center">{$vo.alert_dt|toDate=###}</td>
+                <td align="center">{$vo.alert_type|getAlertType=###}</td>
+                <td align="center">{$vo.device_sn}</td>
+                <td align="center">{$vo.operator_name}</td>
+                <td align="center" class="state_{$vo.status_flg}">{$vo.status_flg|getAlertState=###}</td>
+                <td align="center" class="state_{$vo.status_flg}">{$vo.step}</td>
+                <td align="center">{$vo.start_time|toDate=###}</td>
+                <td align="center">{$vo.end_time|toDate=###}</td>
+                <td align="center"><a href="javascript:void(0);" onclick="javascript:openWindow(500,300,'{:U('Index/showSmsLog?acttype=operator_finish&alertid='.$vo['id'].'')}');">{:L('lb_data_link_sms')}</a></td>
+                <td align="center"><a href="javascript:void(0);" onclick="javascript:openWindow(500,200,'{:U('Index/showCallVoice?alertid='.$vo['id'].'')}');">{:L('lb_data_link_voice')}</a></td>
+            </tr>
+            </volist>
+        </tbody>
+    </table>    
+			<div class="pager">{$page}</div>
+		</div>
+      </div>
+</div>
+<script type="text/javascript">
+function rowColor(){
+	if(document.getElementById('J-rowColor')){
+		var orowColor=document.getElementById('J-rowColor').rows;
+		var i;
+		for(i=0; i<orowColor.length;i++){   
+			if(i%2==0){   
+				orowColor[i].style.background = "#E5E5E5";  
+			}   
+		}  
+	}
+}   
+rowColor();
+</script>
+</body>
+</html>

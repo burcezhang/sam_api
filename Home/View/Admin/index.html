@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<span class="search">');
+    str.push('<form action="" method="get" class="forms" id="fm1">');
+    str.push('<div class="searchBar ml50 fl">');
+    str.push('<input type="text" autofocus="autofocus" placeholder="{:L("common_ALL_SERASH_TITLE")}" name="keyword" id="keyword" value="{$keyword}" class="keyword" />');
+    str.push('<input type="submit" value="{:L("common_ALL_SERASH")}" class="btnSearch" />');
+    str.push('</div></form></span>');		
+    $('#bread').html(str.join(""));
+});
+function deleteinfo(locid,locname){
+	alert(locname);
+	if(confirm('{:L("prompt_delete")}')){
+		$.post("{:U('Admin/loc_delete')}",{id:locid,name:locname},function(returnData){
+			if(returnData.error==0){
+				window.location.href = window.location.href;
+			}else{
+				alert('{:L("alert_get_data_fail")}');
+			}
+		});
+	}
+}
+</script>
+</head>
+<body>
+	<div id="wrap" class="videoList">
+		<div class="crumbs mb5" id="bread"></div>
+	<div class="videoListTable">
+    <div class="clearb">
+    	<div class="editBar fl H40">
+        	
+        </div>
+        <div class="editBar fr H40">
+        	<a href="/admin~get_loc_info~loc~{$loc}~ac~1.html" title="{:L("common_ALL_ADD")}" class="iAdd">{:L("common_ALL_ADD")}</a>
+        	<a href="javascript:void(0);" title="{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a>
+        </div>
+    </div>
+    <table width="100%" id="J-rowColor">
+        <thead>
+            <tr>
+				<td>{:L("lb_list_title_item_no")}</td>
+				<td>{:L("lb_list_title_name")}</td>
+				<td>{:L("lb_list_title_title")}</td>
+				<td>{:L("lb_list_title_contact")}</td>	
+				<td>{:L("lb_list_title_phone")}</td>
+				<td>{:L("lb_list_title_tel")}</td>
+				<td>{:L("lb_list_title_create_date")}</td>
+				<td width="80">{:L("lb_list_title_action")}</td>
+            </tr>
+        </thead>
+        <tbody id="box_list">
+        
+        <volist id="vo" name="datalist2" key="k">
+			<tr  id="row{$vo.id}">
+				<td align="center">{$k}</td>
+				<td>{$vo.loc_name}</td>
+				<td>{$vo.notes.title}</td>
+				<td>{$vo.notes.contact}</td>
+				<td>{$vo.notes.phone}</td>
+				<td>{$vo.notes.tel}</td>
+				<td align="center">{$vo.create_date|toDate=###}</td>
+				<td align="center">
+					<a class="iconedit" href="/admin~get_loc_info~locid~{$vo.id}~loc~{$vo.parent_id}~ac~2.html"><img src="__PUBLIC__/res/images/iconedit.png" alt="{:L("lb_btn_edit")}" width="26" height="26"></a>
+					<a class="iconedit" href="/admin~index~loc~{$vo.id}.html" style="display:none;"><img src="__PUBLIC__/res/images/iconfenlei.png" alt="{:L("lb_btn_edit")}" width="26" height="26"></a>
+					<a class="icondel" href="javascript:void(0);" onclick="javascript:deleteinfo({$vo.id},'{$vo.loc_name}');"><img src="__PUBLIC__/res/images/icondel.png" alt="{:L("lb_btn_delete")}" width="26" height="26"></a>
+				</td>
+				</td>
+			</tr>
+			</volist>
+        </tbody>
+    </table>    
+			<div class="pager">{$page}</div>
+		</div>
+      </div>
+</div>
+<script type="text/javascript">
+function rowColor(){
+	if(document.getElementById('J-rowColor')){
+		var orowColor=document.getElementById('J-rowColor').rows;
+		var i;
+		for(i=0; i<orowColor.length;i++){   
+			if(i%2==0){   
+				orowColor[i].style.background = "#E5E5E5";  
+			}   
+		}  
+	}
+}   
+rowColor();
+</script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvpKiPgu8wFTb27UANGbm93IncC2Ver98&sensor=false"></script>
+<script type="text/javascript">
+/*
+*
+* common js
+* author:315959139@qq.com
+*/
+
+/*
+自动设置页面框架大小
+*/
+function autoWindow(){
+	var i_window_height = $(window).height();
+	$('#t_row_2').attr('height',i_window_height-111);
+}
+function autoWindow2(){
+	var i_window_height = $(window).height();
+	$('#rightbar_row_22').attr('height',i_window_height-111);
+}
+/*
+显示或隐藏左侧功能导航条
+*/
+function switch_leftbar(){
+	if($('#t_row_21').css('display')=='none'){
+		$('#t_row_21').css('display','');
+	}else{
+		$('#t_row_21').css('display','none');
+	}
+}
+function switch_rightbar(){
+	if($('#trightbar_row_21').css('display')=='none'){
+		$('#trightbar_row_21').css('display','');
+	}else{
+		$('#trightbar_row_21').css('display','none');
+	}
+}
+/*
+初始化百度地图
+*/
+function initGoogleMap(lat, lon, is3d){
+	if(isNaN(lat) || lat<=0.1)lat=37.392230;
+	if(isNaN(lon) || lon<=0.1)lon=126.969847;
+
+	var map_icon = "__PUBLIC__/images/location_icon.png";
+	var latlng = new google.maps.LatLng(lat, lon);
+	var options = {
+		zoom: 17,
+		center: latlng,
+		disableDefaultUI: true,
+		panControl: true,
+		zoomControl: true,
+		mapTypeControl: true,
+		scaleControl: true,
+		streetViewControl: false,
+		overviewMapControl: true,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	map = new google.maps.Map(document.getElementById("allmap"), options);
+	map.setZoom(17);
+	map.setCenter(new google.maps.LatLng(lat, lon));
+/*
+	if($('#popup_action_box').length>0){
+		google.maps.event.addListener(map, 'tilesloaded', function(){ 
+			var TILE_SIZE = 256;
+			var zoom = map.getZoom();
+			var scale = 1 << zoom;
+			var tmp = fromLatLngToPoint(latlng,map);
+			$('#popup_window').css('left',tmp.x-$('#popup_window_content').width()/2+'px');
+			$('#popup_window').css('top',tmp.y-$('#popup_window_content').height()/2-136+'px');
+		}); 
+	}
+*/
+	var marker = new google.maps.Marker({
+		position: new google.maps.LatLng(lat, lon),
+		map: map,
+		icon: map_icon,
+		title: ''
+	});
+}
+
+function fromLatLngToPoint(latLng, map) {
+	var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
+	var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
+	var scale = Math.pow(2, map.getZoom());
+	var worldPoint = map.getProjection().fromLatLngToPoint(latLng);
+	return new google.maps.Point((worldPoint.x - bottomLeft.x) * scale, (worldPoint.y - topRight.y) * scale);
+}
+
+function initBaiduMap(lon,lat,is3d){
+	//if(map_icon==null || map_icon=='' || map_icon=='#'){
+	var map_icon = "__PUBLIC__/images/location_icon.png";
+	var gpsPoint = new BMap.Point(lon, lat);
+	map = new BMap.Map("allmap");
+	if(is3d) map.centerAndZoom(gpsPoint, 20);
+	else{
+		BMap.Convertor.translate(gpsPoint,0,function(point){ map.centerAndZoom(point, 17);});
+	}
+	map.enableScrollWheelZoom();// 启动鼠标滚轮操作
+	map.clearOverlays()
+	
+	
+	// if(is3d) map.setMapType(BMAP_SATELLITE_MAP);
+	
+	var ctrl_nav = new BMap.NavigationControl({anchor:BMAP_ANCHOR_TOP_LEFT,type:BMAP_NAVIGATION_CONTROL_LARGE});
+	map.addControl(ctrl_nav);	
+	
+	//坐标转换完之后的回调函数
+	if(is3d){
+		var myIcon = new BMap.Icon(map_icon, new BMap.Size(40,51));
+		var marker2 = new BMap.Marker(gpsPoint, {icon:myIcon});// 创建标注
+		map.addOverlay(marker2);// 将标注添加到地图中
+	}
+}
+function addMarker(dat,k){
+	if(dat.LONGITUDE=='0'||dat.LATITUDE=='0')return;
+	var map_icon = "__PUBLIC__/images/location_icon.png";
+	var myIcon = new BMap.Icon(map_icon, new BMap.Size(40,51));
+	var gpsPoint = new BMap.Point(dat.LONGITUDE,dat.LATITUDE);
+	translateCallback = function (point){
+		var marker = new BMap.Marker(point,{icon:myIcon});
+		map.addOverlay(marker);
+		var label = new BMap.Label(dat.elderly_name,{offset:new BMap.Size(20,-10)});
+		marker.setLabel(label);
+		marker.addEventListener("click",function(){showAged(k)});
+	}
+	BMap.Convertor.translate(gpsPoint,0,translateCallback);
+}
+
+/*
+通过百度API获取城市名称（经纬度）
+*/
+function getCity(lon,lat){
+	// 百度地图API功能
+	//alert(lon+','+lat);
+	var geoc = new BMap.Geocoder();
+	var pt = new BMap.Point(lon, lat);
+	var addr = '';
+	geoc.getLocation(pt, function(rs){
+			var addComp = rs.addressComponents;
+			//alert(addComp.province + ", " + addComp.city + ", " + addComp.district + ", " + addComp.street + ", " + addComp.streetNumber);
+			//alert(addComp.city);
+			addr = addComp.city;
+			//return addComp.city;			
+	});
+	//alert(addr);
+	return addr;
+}
+
+/*
+使ID=popup_window的DIV可拖动，触点ID为popup_window_title
+*/
+function dropAlertBox(){
+	//alert($('#popup_window').length);
+	if($("#popup_window").length > 0){	
+			$("#popup_window_title").mousedown(function(e)//e鼠标事件  
+            {  
+                //$(this).css("cursor","move");//改变鼠标指针的形状                  
+                var offset = $(this).offset();//DIV在页面的位置  
+                var x = e.pageX - offset.left;//获得鼠标指针离DIV元素左边界的距离  
+                var y = e.pageY - offset.top;//获得鼠标指针离DIV元素上边界的距离  
+                $(document).bind("mousemove",function(ev)//绑定鼠标的移动事件，因为光标在DIV元素外面也要有效果，所以要用doucment的事件，而不用DIV元素的事件  
+                {  
+                    $("#popup_window").stop();//加上这个之后                      
+                    var _x = ev.pageX - x;//获得X轴方向移动的值  
+                    var _y = ev.pageY - y;//获得Y轴方向移动的值 
+					if(_x < 0) _x = 0;
+					if(_y < 0) _y = 0;
+					if(_x > ($(window).width()-100)) _x = $(window).width()-100;
+					if(_y > ($(window).height()-100)) _y = $(window).height()-100;
+                    $("#popup_window").animate({left:_x+"px",top:_y+"px"},10);  
+                });                  
+            });              
+            $(document).mouseup(function()  
+            {  
+                $("#popup_window").css("cursor","default");  
+                $(this).unbind("mousemove");  
+            });
+	}
+}
+/*
+页面顶部天气数据获取
+*/
+function getWeather(){
+	$.post("{:U('Index/getBaiduWeather')}",{},function(returnData){
+		if(returnData.error==0){
+			var sWeather = returnData.currentCity + ' : ' + returnData.weather_data.weather + ' ' + returnData.weather_data.temperature;
+			$('.header_weather').html(sWeather);
+		}
+	});
+}
+/*
+设置自已的在线状态
+*/
+function setUserState(state_flg,set_user_state_var){
+	if(isNaN(state_flg) || state_flg=='0')
+	{
+		return false;
+	}
+	$.post("{:U('Index/setUserState')}",{state:state_flg},function(returnData){
+		if(returnData.setflg>0){
+			$('#user_online_status').attr('class','user_online_status_0'+state_flg);
+			if(set_user_state_var==true){
+				user_online_status=state_flg;
+			}
+		}
+	});
+}
+/*
+Tab页签式内容编辑框，切换Tab页
+*/
+function data_tab_switch(totalTab,useTab){
+	$('.data_edit_tab').removeClass('data_edit_box_tab_hover').removeClass('data_edit_box_tab').addClass('data_edit_box_tab');
+	$('.data_edit_content').css('display','none');
+	$('#data_edit_tab_'+useTab).removeClass('data_edit_box_tab').addClass('data_edit_box_tab_hover');
+	$('#data_edit_content_'+useTab).css('display','');
+}
+/*
+弹出WINDOW
+*/
+function openWindow(w,h,url){	
+	var index = $.layer({
+		type : 2,
+		shade : [0.5 , '#000' , true],
+		shadeClose : true,
+		border : [!0],
+		title : false,
+		//offset : ['25px',''],
+		area : [w+'px', h+'px'],
+		iframe : {src : url}
+	});
+    //event.preventDefault();	
+}
+function openWindow2(w,h,url,bgc,close_btn){
+	var index = $.layer({
+		type : 2,
+		shade : [0.5 , '#000' , true],
+		shadeClose : false,
+		closeBtn: close_btn,
+		border : [!0],
+		bgcolor: bgc,
+		title : false,
+		//offset : ['25px',''],
+		area : [w, h],
+		iframe : {src : url}
+	});
+    //event.preventDefault();	
+}
+
+</script>

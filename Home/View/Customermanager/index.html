@@ -1,0 +1,1137 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/upload.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/upload.min.js"></script>
+<script src="__PUBLIC__/my97dp/{$Language}_WdatePicker.js" language="javascript" type="text/javascript"></script>
+<script src="__PUBLIC__/jsAddress/jsAddress.js" type="text/javascript"></script>
+  <if condition="$default_map_dj == 2 ">
+    <script src="https://maps.googleapis.com/maps/api/js?key={:C('GOOGLE_AK')}" async defer></script>
+    <else />
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak={:C('BAIDU_AK')}"></script>
+  </if>
+<script src="__PUBLIC__/js/common.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<div class="editBar" style="position:absolute; right:0; bottom:-5px;">');
+    //str.push('<a href="javascript:void(0);" title="{:L("common_ALL_RETURN")}" onclick="Result();" class="iBack">{:L("common_ALL_RETURN")}</a>');
+    str.push('<a href="javascript:void(0);" title=">{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a></div>');
+    $('#bread').html(str.join(""));
+	//autoWindow();
+	showBeacon();
+	dropAlertBox();
+	uploadIfy();
+	initArea();
+	initEvent();
+	initValue();
+
+	$('#disease_other_text').change('click', function(){
+		if($('#disease_other_text').val()==''){
+			$('#disease_other').val(' ');
+		}else{
+			$('#disease_other').val(' -'+$('#disease_other_text').val());
+		}
+	});
+
+	var ajax_option={
+		url:"{:U('Customermanager/useradd_save')}",
+		success:function(data){
+			if(data.error==0){
+				alert(data.info+'{:L("alert_reg_success")}');
+				window.location.href=window.location.href;
+			}else{
+				alert(data.info+'{:L("alert_reg_failed")}');
+			}
+		}
+	};
+	$('#frmUserAdd').submit(function() {
+        if(chkFrmUserAdd()==true){
+			$(this).ajaxSubmit(ajax_option);
+		}
+        return false;
+    });
+});
+function closePopupBox(){
+	$('#popup_window_content').html("&nbsp;");
+}
+function chkFrmSearch(){
+	if($('#keyword').val()==''){
+		return false;
+	}
+	return true;
+}
+function showBeacon(){
+	if ('{$group[0]}' == 'C'){
+		$('#data_edit_tab_3').css('display','');
+		$('.room').css('display','');	
+	}else{
+		$('#data_edit_tab_3').css('display','');
+		$('.room').css('display','');	
+	}
+}
+function uploadIfy(){
+	var init = new localUp($('#upload_box'),{rWidth: 80,quality: 1,success:function (stop, data) {
+		//data.original.size = (data.original.size / 1024).toFixed(2);
+		$('#img').attr('src',data.base64);
+		$('#photo').val(data.base64);
+		setTimeout(function () {stop();}, 1000);
+	}});
+	init.change(function(n) {
+		"function" == typeof this.defaults.change ? this.defaults.change(n) : void 0;
+	}).success(function(n, t) {
+		"function" == typeof this.defaults.success ? this.defaults.success(n, t) : void 0;
+	}).reset = function() {
+		init.UI.reset();
+		"function" == typeof this.defaults.reset&&this.defaults.reset();
+	}
+}
+function initArea(){
+addressInit('address1','address2','address3',"Korea","Korea","Korea");
+}
+function initValue(){
+	$('#device_set3_day').val('{$traceday}');
+	$('#device_set4_NO1').val('{$varinfo["device_set4"]["NO1"]}');
+	$('#device_set4_NO2').val('{$varinfo["device_set4"]["NO2"]}');
+	
+	$('#device_set5').val('{$varinfo["device_set5"]}');
+	$('#device_set6').val('{$varinfo["device_set6"]}');
+
+	$('#device_set7_time1').val('{$timespc[0]}');
+	$('#device_set7_time2').val('{$timespc[1]}');
+	$('#device_set7_time3').val('{$timespc[2]}');
+
+	$('#device_set8_time1').val('{$cycspc[0]}');
+	$('#device_set8_time2').val('{$cycspc[1]}');
+	$('#device_set8_time3').val('{$cycspc[2]}');
+
+	$('#device_set9_time1').val('{$timespc[0]}');
+	$('#device_set9_time2').val('{$timespc[1]}');
+	$('#device_set9_time3').val('{$timespc[2]}');
+
+	$('#device_set10_low_t').val('{$tempspc[0]}');
+	$('#device_set10_hight_t').val('{$tempspc[1]}');
+	$('#device_set10_method').val('{$tempspc[2]}');
+
+	if($('#device_model').val()=='APT158'){
+		if ('{$group[0]}' == 'P'){
+			$('#data_edit_tab_3').css('display','');
+		}
+		$('.device_temp').css('display','');			
+	}else if($('#device_model').val()=='APT230'){
+		if ('{$group[0]}' == 'P'){
+			$('#data_edit_tab_3').css('display','');
+		}	
+		$('.device_temp').css('display','');	
+	}else if($('#device_model').val()=='APT620'){
+                if ('{$group[0]}' == 'P'){
+                        $('#data_edit_tab_3').css('display','');
+                }else{
+			$('#Data_edit_tab_3').css('display','');
+		}
+                  
+                $('.device_temp').css('display','');
+
+	}else{
+		if ('{$group[0]}' == 'P'){
+			$('#data_edit_tab_3').css('display','');
+		}	
+		$('.device_temp').css('display','');			
+	}
+	//$('#device_auth_code').val('{$device_auth_code}');
+}
+function showPopupBoxCommon(box_no,flg){
+	if(box_no!=2) $('#device_set'+box_no+'_box').css('display','');
+	switch(flg){
+		case 'default':
+			$('.device_set'+box_no).removeClass('txtbox1').removeClass('txtbox2');
+			$('#device_set'+box_no+'_default').addClass('txtbox1');
+			$('#device_set'+box_no+'_diy_setting').addClass('txtbox2');
+			if(box_no!=2){
+				$('#device_set'+box_no+'_box').css('left','10px');
+				$('#device_set'+box_no+'_default_flg').val('Y');
+				initDeviceSet(box_no);
+			}else $('#device_set'+box_no).val(1);
+		break;
+		case 'diy_setting':
+			$('.device_set'+box_no).removeClass('txtbox1').removeClass('txtbox2');
+			$('#device_set'+box_no+'_default').addClass('txtbox2');
+			$('#device_set'+box_no+'_diy_setting').addClass('txtbox1');
+			if(box_no!=2){
+				$('#device_set'+box_no+'_box').css('left','210px');
+				$('#device_set'+box_no+'_default_flg').val('N');
+				//if(box_no==1)change_DeviceSet_Ext(box_no,true);
+			}else $('#device_set'+box_no).val(0);
+		break;
+	}
+}
+function closePopupBoxCommon(box_no){
+	$('#device_set'+box_no+'_box').css('display','none');
+}
+function initDeviceSet(box_no){
+	switch(box_no){
+		case '1':
+		break;
+		case '2':
+
+		break;
+		case '3':
+			$('#device_set'+box_no+'_day').val('{$varinfo["device_set3"]["day"]}');
+		break;
+		case '4':
+
+		break;
+		case '5':
+
+		break;
+		case '6':
+
+		break;
+		case '7':
+			$('#device_set'+box_no+'_time1').val('{$varinfo["device_set7"]["TIME1"]}');
+			$('#device_set'+box_no+'_time2').val('{$varinfo["device_set7"]["TIME2"]}');
+			$('#device_set'+box_no+'_time3').val('{$varinfo["device_set7"]["TIME3"]}');
+		break;
+		case '8':
+			$('#device_set'+box_no+'_time1').val('{$varinfo["device_set8"]["TIME1"]|toDate=###,"H:i"}');
+			$('#device_set'+box_no+'_time2').val('{$varinfo["device_set8"]["TIME2"]|toDate=###,"H:i"}');
+			$('#device_set'+box_no+'_time3').val('{$varinfo["device_set8"]["TIME3"]|toDate=###,"H:i"}');
+		break;
+		case '9':
+			$('#device_set'+box_no+'_time1').val('{$varinfo["device_set9"]["TIME1"]}');
+			$('#device_set'+box_no+'_time2').val('{$varinfo["device_set9"]["TIME2"]}');
+			$('#device_set'+box_no+'_time3').val('{$varinfo["device_set9"]["TIME3"]}');
+		break;
+		case '10':
+			$('#device_set'+box_no+'_low_t').val('{$varinfo["device_set10"]["LOW_T"]}');
+			$('#device_set'+box_no+'_hight_t').val('{$varinfo["device_set10"]["HIGHT_T"]}');
+			$('#device_set'+box_no+'_method').val('{$varinfo["device_set10"]["METHOD"]}');
+		break;
+		case '11':
+
+		break;
+		case '12':
+
+		break;
+		case '13':
+
+		break;
+		case '14':
+			$('#device_set'+box_no+'_time1').val('{$varinfo["device_set14"]["TIME1"]}');
+			$('#device_set'+box_no+'_time2').val('{$varinfo["device_set14"]["TIME2"]}');
+			$('#device_set'+box_no+'_time3').val('{$varinfo["device_set14"]["TIME3"]}');
+			//if('{$varinfo["device_set14"]["arg1"]|default="off"}'=='on'){$('#device_set14_arg1').attr('checked',true);}else{$('#device_set14_arg1').attr('checked',false);}
+		break;
+		case '15':
+			//if('{$varinfo["device_set15"]["arg1"]|default="off"}'=='on'){$('#device_set15_arg1').attr('checked',true);}else{$('#device_set15_arg1').attr('checked',false);}
+		break;
+	}
+}
+function initEvent(){
+/*	$('#device_set1_arg3').change(function(){calcServiceAmount(1,3);});
+	$('#device_set2_arg3').change(function(){calcServiceAmount(2,3);});
+	$('#device_set1_arg5').change(function(){calcServiceAmount(1,5);});
+	$('#device_set2_arg5').change(function(){calcServiceAmount(2,5);});
+	$('#device_set1_arg6').change(function(){calcServiceAmount(1,6);});
+	$('#device_set2_arg6').change(function(){calcServiceAmount(2,6);});
+	$('#device_set1_arg7').change(function(){calcServiceAmount(1,7);});
+	$('#device_set2_arg7').change(function(){calcServiceAmount(2,7);});
+	$('#device_set1_arg8').change(function(){calcServiceAmount(1,8);});
+	$('#device_set2_arg8').change(function(){calcServiceAmount(2,8);});
+	$('#device_set1_arg9').change(function(){calcServiceAmount(1,9);});
+	$('#device_set2_arg9').change(function(){calcServiceAmount(2,9);});
+*/
+
+	$('#device_model').change(function(){
+		if($(this).val()=='APT158'){
+			if ('{$group[0]}' == 'P'){
+				$('#data_edit_tab_3').css('display','');
+			}else{
+				$('#data_edit_tab_3').css('display','');
+			}
+			$('.device_temp').css('display','');			
+		}else if($(this).val()=='APT230'){
+			if ('{$group[0]}' == 'P'){
+				$('#data_edit_tab_3').css('display','');
+			}
+			$('.device_temp').css('display','');			
+                }else if($(this).val()=='APT620'){
+                        if ('{$group[0]}' == 'P'){
+                                $('#data_edit_tab_3').css('display','');
+                        }else{
+				$('#data_edit_tab_3').css('display','');
+			}
+                        $('.device_temp').css('display','');
+		}else{
+			$('#data_edit_tab_3').css('display','');
+			$('.device_temp').css('display','');			
+		}
+	});
+	$('#service_period').change(function(){calc_termination_date();});
+	$("#device_sn").blur(function(){
+		if($("#device_sn").val()==''){}else{
+			$.post("{:U('Customermanager/check_device_sn')}",{sn:$("#device_sn").val()},function(returnData){
+				if(returnData.error>0){
+					alert('{:L("alert_no_exists")}');
+					$("#device_sn").val('');
+				}
+			});
+		}
+	});
+}
+function calc_termination_date(){
+	var register_date = $('#register_date').val();
+	var service_period = $('#service_period').val();
+	if(register_date=='' || service_period=='') return false;
+	$('#termination_date').val(DateAdd('y',service_period,new Date(register_date)));
+}
+function resetServiceAmount(set_no,args_no){
+	//alert('resetServiceAmount__'+set_no+'__'+args_no);
+	alert($('#device_set'+set_no+'_arg'+args_no).is(':checked'));
+	$('#device_set'+set_no+'_arg'+args_no+'_time1').val('');
+	$('#device_set'+set_no+'_arg'+args_no+'_time2').val('');
+	$('#device_set'+set_no+'_arg'+args_no+'_amount').val('');
+	//alert($('#device_set'+set_no+'_arg'+args_no+'_amount').val());
+}
+function calcServiceAmount(set_no,args_no){
+	var smsDayAmount={$varinfo["service_price"]["sms"]}; //每天的单价
+	var callDayAmount={$varinfo["service_price"]["call"]}; //每天的单价
+	if(isNaN(smsDayAmount)){smsDayAmount=0;}
+	if(isNaN(callDayAmount)){callDayAmount=0;}
+	//alert($('#device_set'+set_no+'_arg'+args_no).is(':checked'));
+	if(!$('#device_set'+set_no+'_arg'+args_no).is(':checked')){
+		$('#device_set'+set_no+'_arg'+args_no+'_time1').val('');
+		$('#device_set'+set_no+'_arg'+args_no+'_time2').val('');
+		$('#device_set'+set_no+'_arg'+args_no+'_amount').val('');
+		return false;
+	}
+	var time1=$('#device_set'+set_no+'_arg'+args_no+'_time1').attr('value');
+	var time2=$('#device_set'+set_no+'_arg'+args_no+'_time2').attr('value');
+	if(time1=='' || time2==''){
+		$('#device_set'+set_no+'_arg'+args_no+'_amount').val('0');
+		return false;
+	}
+	time1=new Date(time1);
+	time2=new Date(time2);
+	if(time2<time1){
+		$('#device_set'+set_no+'_arg'+args_no+'_amount').val('0');
+		return false;
+	}
+	var days = time2.diff(time1);
+	if(set_no=='1') $('#device_set'+set_no+'_arg'+args_no+'_amount').val(smsDayAmount*(1+days));
+	if(set_no=='2') $('#device_set'+set_no+'_arg'+args_no+'_amount').val(callDayAmount*(1+days));
+}
+function change_DeviceSet_Ext(set_no,show){
+	if(show){
+		$('.device_set'+set_no+'_ext').css('display','');
+	}else{
+		$('.device_set'+set_no+'_ext').css('display','none');
+	}
+}
+function chkFrmUserAdd(){
+	if($('#elderly_name').val()==''){ alert('{:L("alert_form_elderly_name")}');return false; }
+	if($('#nick_name').val()==''){ alert('{:L("alert_form_nick_name")}');return false; }
+	if($('#birthday').val()==''){ alert('{:L("alert_form_birthday")}');return false; }
+	if($('#height').val()==''){ alert('{:L("alert_form_height")}');return false; }
+	if($('#weight').val()==''){ alert('{:L("alert_form_weight")}');return false; }
+	if($('#address1').val()==''){ alert('{:L("alert_form_address1")}');return false; }
+	if($('#address2').val()==''){ alert('{:L("alert_form_address2")}');return false; }
+	if($('#address3').val()==''){ alert('{:L("alert_form_address3")}');return false; }
+	if($('#address4').val()==''){ alert('{:L("alert_form_address4")}');return false; }
+	if($('#home_tel').val()==''){ alert('{:L("alert_form_home_tel")}');return false; }
+	if($('#phone').val()==''){ alert('{:L("alert_form_phone")}');return false; }
+	if($('#sim').val()==''){ alert('{:L("alert_form_sim")}');return false; }
+	if($('#device_sn').val()==''){ alert('{:L("alert_form_device_sn")}');return false; }
+	//if($('#device_auth_code').val()==''){ alert('{:L("alert_form_device_auth_code")}');return false; }
+	if($('#register_date').val()==''){ alert('{:L("alert_form_register_date")}');return false; }
+	if($('#termination_date').val()==''){ alert('{:L("alert_form_termination_date")}');return false; }
+	if($('#use_area_str1').val()==''){ alert('{:L("alert_form_use_area_str1")}');return false; }
+	if($('#use_area_str2').val()==''){ alert('{:L("alert_form_use_area_str2")}');return false; }
+	if($('#device_set4_NO1').val()==''){ alert('{:L("lb_emergency_call_no")}');return false; }
+
+	if($('#disease_other_text').val()==''){
+		$('#disease_other').val(' ');
+		$('#disease_other').attr('checked',true);
+	}else{
+		$('#disease_other').val(' -'+$('#disease_other_text').val());
+	}
+
+	return true;
+}
+var beaconID=1;
+function addBeacon() {
+	var str=[];
+	str.push('<div class="showlist" id="beacons'+beaconID+'_box">');
+	str.push('<div style="float: left; padding-left:4px;">');
+	str.push('{:L("lb_form_beacom_title")}&nbsp;&nbsp;<input name="beacons['+beaconID+'][beaconID]" type="text" id="beacons_beaconID'+beaconID+'" size="6" maxlength="8" />');
+	str.push('</div><div style="float: left; padding-left:4px;">');
+	str.push('{:L("lb_form_beacom_name")}&nbsp;&nbsp;<input name="beacons['+beaconID+'][name]" type="text" id="beacons_name'+beaconID+'" size="12" />');
+	str.push('</div><div style="float: left; padding-left:4px;">');
+	str.push('{:L("lb_form_beacom_address")}&nbsp;&nbsp;');
+	str.push('<input type="text" id="beacons_address'+beaconID+'" style="vertical-align:middle;" name="beacons['+beaconID+'][address]" size="45" />');
+	str.push('<img src="__PUBLIC__/images/location_icon.png" style="vertical-align:middle;" onclick="getPoint('+beaconID+')" width="20" alt="">');
+	str.push('</div><div style="float: left; padding-left:4px;">');
+	str.push('{:L("lb_form_beacom_lat")}&nbsp;&nbsp;');
+	str.push('<input type="text" id="beacons_lat'+beaconID+'" name="beacons['+beaconID+'][lat]" size="8" readonly="readonly" />');
+	str.push('</div><div style="float: left; padding-left:4px; vertical-align:middle;">');
+	str.push('{:L("lb_form_beacom_lon")}&nbsp;&nbsp;');
+	str.push('<input type="text" id="beacons_lon'+beaconID+'" name="beacons['+beaconID+'][lon]" size="8" readonly="readonly" />');
+	str.push('</div><div style="float: right; width:60px;">');
+	str.push('<a class="add" style="height:20px;font-size: 12px;font-weight:200;line-height:20px;" href="javascript:delBeacon(\'beacons'+beaconID+'\');">{:L("lb_form_beacom_btn")}</a>');
+	str.push('</div></div>');
+	$('#beacons').append(str.join(''));
+	addressInit('beacons'+beaconID+'_address1', 'beacons'+beaconID+'_address2', 'beacons'+beaconID+'_address3', " ", " ", " ");
+	beaconID++;
+}
+function delBeacon(tagid){
+	$('#'+tagid+'_box').remove();
+}
+function mfSubmit(){
+	$.ajax({
+		cache: true,
+		type: "POST",
+		url:"{:U('Customermanager/useradd_save')}",
+		data:$('#frmUserAdd').serialize(),// 你的formid
+		async: false,
+		error: function(request) {
+			alert("Connection error");
+		},
+		success: function(data) {
+			alert(data.info);
+		}
+	});	
+}
+</script>
+<include file="Public:commjs" />
+</head>
+
+<body scroll="no">
+<div id="wrap" class="videoList">
+<div class="crumbs mb5" id="bread" style="position:relative;"></div>
+<div class="edit">
+  <div class="editContent">
+    <form id="frmUserAdd" method="post" action="{:U('Customermanager/useradd_save')}">
+      <div class="data_edit_box_1">
+        <div id="data_edit_tab_1" class="data_edit_tab data_edit_box_tab_hover"><a href="javascript:void(0);" onclick="javascript:data_tab_switch(2,1);">{:L("lb_title_tab1")}</a></div>
+        <div id="data_edit_tab_2" class="data_edit_tab data_edit_box_tab"><a href="javascript:void(0);" onclick="javascript:data_tab_switch(2,2);">{:L("lb_title_tab2")}</a></div>
+        <div id="data_edit_tab_3" class="data_edit_tab data_edit_box_tab"><a href="javascript:void(0);" onclick="javascript:data_tab_switch(3,3);">{:L("lb_title_tab3")}</a></div>        
+      </div>
+      <div class="data_edit_box_2 form_table" style="min-height:450px;border: 2px solid #4D4D4D;border-top: none;">
+        <div id="data_edit_content_1" class="data_edit_content" style="display:;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+            <tr>
+              <td width="100" align="center" valign="top">
+              <div id="upload_box" style="width:100px;height:100px;"></div>
+                <input name="photo" type="hidden" value="" id="photo"/>
+              </td>
+              <td><div class="bg" style="height:25px;line-height:25px;margin:1px;"><b>{:L("lb_form_baseinfo")}</b></div>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                  <tr>
+                    <td width="60">{:L("lb_form_elderly_name")}</td>
+                    <td width="250"><input type="text" id="elderly_name" name="elderly_name" /></td>
+                    <td width="60">{:L("lb_form_nick_name")}</td>
+                    <td><input type="text" id="nick_name" name="nick_name" />
+                      <input type="hidden" id="type" name="type" value="0" />
+                      <input type="hidden" id="monitor_id" name="monitor_id" value="0" />
+                      <input type="hidden" id="care_star" name="care_star" value="0" />
+                      <input type="hidden" id="idcard" name="idcard" value="0" />
+                      <input type="hidden" id="use_area_id" name="use_area_id" value="{$userinfo.loc_id}" />
+                      <input type="hidden" id="elderly_code" name="elderly_code" value="0" /></td>
+                  </tr>
+                  <tr>
+                    <td>{:L("lb_form_sex")}</td>
+                    <td><select id="sex" name="sex" class="">
+                      <option value="1">{:L("lb_form_sex1")}</option>
+                      <option value="0">{:L("lb_form_sex0")}</option>
+                    </select></td>
+                    <td>{:L("lb_form_barthday")}</td>
+                    <td><input type="text" id="barthday" name="barthday" class="Wdate" onClick="WdatePicker()" /></td>
+                  </tr>
+                  <tr>
+                    <td>{:L("lb_form_height")}</td>
+                    <td><input type="text" id="height" name="height" /></td>
+                    <td>{:L("lb_form_weight")}</td>
+                    <td><input type="text" id="weight" name="weight" /></td>
+                  </tr>
+                </table>
+                <div class="bg" style="height:25px;line-height:25px;margin:10px 1px 1px 1px;"><b>{:L("lb_form_personinfo")}</b></div>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                  <tr>
+                    <td width="60">{:L("lb_form_address")}</td>
+                    <td colspan="3"><select id="address1" name="address[]" class="">
+                      <option value=""></option>
+                    </select>
+                      <select id="address2" name="address[]" class="">
+                        <option value=""></option>
+                      </select>
+                      <select id="address3" name="address[]" class="">
+                        <option value=""></option>
+                      </select>
+                      <input type="text" id="address4" name="address[]" /></td>
+                  </tr>
+                  <tr>
+                    <td>{:L("lb_form_home_tel")}</td>
+                    <td width="250"><input type="text" id="home_tel" name="home_tel" /></td>
+                    <td width="60">{:L("lb_form_phone")}</td>
+                    <td><input type="text" id="phone" name="phone" /></td>
+                  </tr>
+                </table>
+                <div class="bg" style="height:25px;line-height:25px;margin:10px 1px 1px 1px;"><b>{:L("lb_form_monitor_info")}</b></div>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                  <tr>
+                    <td width="60">{:L("lb_form_monitor_info")}1</td>
+                    <td>{:L("lb_form_monitor_info_name")}
+                      <input type="text" name="monitor_info[0][name]" style="width:120px;" />
+                      {:L("lb_form_monitor_info_phone")}
+                      <input type="text" name="monitor_info[0][phone]" style="width:120px;" />
+                      {:L("lb_form_monitor_info_address")}
+                      <input type="text" name="monitor_info[0][address]" /></td>
+                  </tr>
+                  <tr>
+                    <td width="60">{:L("lb_form_monitor_info")}2</td>
+                    <td>{:L("lb_form_monitor_info_name")}
+                      <input type="text" name="monitor_info[1][name]" style="width:120px;" />
+                      {:L("lb_form_monitor_info_phone")}
+                      <input type="text" name="monitor_info[1][phone]" style="width:120px;" />
+                      {:L("lb_form_monitor_info_address")}
+                      <input type="text" name="monitor_info[1][address]" /></td>
+                  </tr>
+                  <tr>
+                    <td width="60">{:L("lb_form_monitor_info")}3</td>
+                    <td>{:L("lb_form_monitor_info_name")}
+                      <input type="text" name="monitor_info[2][name]" style="width:120px;" />
+                      {:L("lb_form_monitor_info_phone")}
+                      <input type="text" name="monitor_info[2][phone]" style="width:120px;" />
+                      {:L("lb_form_monitor_info_address")}
+                      <input type="text" name="monitor_info[2][address]" /></td>
+                  </tr>
+                </table>
+                <div class="bg" style="height:25px;line-height:25px;margin:10px 1px 1px 1px;"><b>{:L("lb_form_disease")}</b></div>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                  <tr>
+                    <td><php>foreach($disease as $val){</php>
+                      <div class="float_left" style="width:24%;">
+                        <input type="checkbox" name="disease[]" value="{$val}" />
+                        {$val} </div>
+                      <php>}</php>
+                      <div class="float_left" style="width:24%;">
+                        <input name="disease[]" type="checkbox" id="disease_other" value=" " />
+                        {:C('DEVICE_INFO_OTHER')}
+                        <input type="text" id="disease_other_text" name="disease_other_text" />
+                      </div></td>
+                  </tr>
+                </table>
+                <div style="height:25px;line-height:25px;margin:10px 1px 1px 1px;"><b></b></div></td>
+            </tr>
+          </table>
+        </div>
+        <div id="data_edit_content_2" class="data_edit_content" style="display:none;padding-left:15px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+            <tr>
+              <td width="60"><b>{:L("lb_form_sales_id")}</b></td>
+              <td width="200"><select id="sales_id" name="sales_id">
+                <volist id="vo" name="sales_list">
+                  <option value="{$vo.id}">{$vo.true_name}</option>
+                </volist>
+              </select></td>
+              <td width="60">{:L("lb_emergency_call_no")}1</td>
+              <td width="200"><input type="text" id="device_set4_NO1" name="device_set4[NO1]" value="" /></td>
+              <td width="60">{:L("lb_emergency_call_no")}2</td>
+              <td><input type="text" id="device_set4_NO2" name="device_set4[NO2]" value="" />
+                <!-- <input type="hidden" id="type" name="device_set1" value="N" />-->
+                <!-- device_set1 SMS服务 -->
+                <!-- <input type="hidden" id="type" name="device_set2" value="N" />-->
+                <!-- device_set2 CALL服务 -->
+                <!-- <input type="hidden" id="type" name="device_set3" value="7" />-->
+                <!-- device_set3 轨迹保存天数 -->
+                <!--<input type="hidden" id="type" name="device_set4" value="" />-->
+                <!-- device_set4 系统设置-紧急呼叫中心号码设置 -->
+                <input type="hidden" id="type" name="device_set5" value="" />
+                <!-- device_set5 系统设置-设置端口号码 -->
+                <input type="hidden" id="type" name="device_set6" value="" />
+                <!-- device_set6 系统设置-设置 URL -->
+                <!-- <input type="hidden" id="type" name="device_set7" value="" />-->
+                <!-- device_set7 系统设置-GPS发送周期设置 -->
+                <!-- <input type="hidden" id="type" name="device_set8" value="" />-->
+                <!-- device_set8 系统设置-操作周期设置 -->
+                <!-- <input type="hidden" id="type" name="device_set9" value="" />-->
+                <!-- device_set9 温度获取时间间隔设置 -->
+                <!-- <input type="hidden" id="type" name="device_set10" value="" />-->
+                <!-- device_set10 健康管理功能设置 -->
+                <!--<input type="hidden" id="type" name="device_set11" value="" />-->
+                <!-- device_set11 系统设置-设置电话回答使能 -->
+                <!--<input type="hidden" id="type" name="device_set12" value="" />-->
+                <!-- device_set12 系统设置-设置个人信息(性别(0 : Male, 1 : Female)、身高、体重) -->
+                <!--<input type="hidden" id="type" name="device_set13" value="" />-->
+                <!-- device_set13 系统设置-跟踪周期设置 --></td>
+            </tr>
+            <tr>
+              <td width="60">{:L("lb_form_sim")}</td>
+              <td width="200"><input type="text" id="sim" name="sim" /></td>
+              <td width="60">{:L("lb_form_device_sn")}</td>
+              <td width="200"><input type="text" id="device_sn" name="device_sn" /></td>
+              <td width="60">{:L("lb_form_device_auth_code")}</td>
+              <td><input type="text" id="device_auth_code" name="device_auth_code" readonly style="width:126px;" />
+                <input type="button" onclick="$('#device_auth_code').val('{$device_auth_code}')" value="{:L("lb_form_device_auth_code_btn")}" /></td>
+            </tr>
+            <tr>
+              <td width="60">{:L("lb_form_device_model")}</td>
+              <td width="200"><select id="device_model" name="device_model">
+                <option value="APT158">APT158</option>
+                <option value="APT630">APT230</option>
+                <option value="APT228">APT620</option>                
+              </select></td>
+              <td width="60">{:L("lb_form_register_date")}</td>
+              <td width="200"><input type="text" id="register_date" name="register_date" class="Wdate" onClick="WdatePicker({onpicked:function(){calc_termination_date();}})" /></td>
+              <td width="60">{:L("lb_form_termination_date")}</td>
+              <td><input type="text" id="termination_date" name="termination_date" readonly /></td>
+            </tr>
+            <tr>
+              <td width="60">{:L("lb_form_use_area_str1")}</td>
+              <td width="200"><select id="use_area_str1" name="use_area_str[]">
+                <option value="Korea">Korea</option>
+              </select></td>
+              <td width="60">{:L("lb_form_use_area_str2")}</td>
+              <td width="200"><input type="text" id="use_area_str2" name="use_area_str[]" /></td>
+              <td width="60">{:L("lb_form_service_period")}</td>
+              <td><select id="service_period" name="service_period">
+                <option value="1">1{:L("lb_form_service_period_year")}</option>
+                <option value="2">2{:L("lb_form_service_period_year")}</option>
+                <option value="3">3{:L("lb_form_service_period_year")}</option>
+              </select>
+              <text class="room">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              {:L("lb_form_use_room")}</text>
+              <select class="room" id="roomid" name="roomid">
+              <volist id="vo" name="beacon">
+                <option value="{$vo.beaconID}">{$vo.name}</option>
+              </volist>
+              </select>
+              </td>
+            </tr>
+          </table>
+          <div class="bg" style="height:25px;line-height:25px;margin:1px;"><b>{:L("lb_form_device_setting")}</b></div>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+            <tr>
+              <td width="25%">{:L("lb_form_device_set7_title")}</td>
+              <td width="50%"><input type="button" class="txtbox1 device_set7" id="device_set7_default" name="device_set7_default" value="{:L('lb_form_default_setting')}" onClick="javascript:showPopupBoxCommon('7','default');" />
+                <input type="button" class="txtbox2 device_set7 margin_left50" id="device_set7_diy_setting" name="device_set7_diy_setting" value="{:L('lb_form_diy_setting')}" onClick="javascript:showPopupBoxCommon('7','diy_setting');" />
+                <!-- *******popup box device set ***********start****** -->
+                <div id="device_set7_box" class="popup_box_comm" style="width:300px;display:none;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                    <tr>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                      <td class="" style="width:60px;">&nbsp;</td>
+                      <td class="">&nbsp;</td>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_1" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_1m">----------&nbsp;</td>
+                      <td class="popup_box_comm_1r" style="width:20px;"><a href="javascript:void(0);" onclick="javascript:closePopupBoxCommon('7');">√&nbsp;&nbsp;</a></td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_2" style="width:20px;">&nbsp;</td>
+                      <td class="popup_box_comm_2m" colspan="2"><div>{:L("lb_form_device_set7_time1")}：
+                        <input type="text" id="device_set7_time1" name="device_set7[TIME1]" />
+                        {:L("lb_form_device_set7_minute")}</div>
+                        <div>{:L("lb_form_device_set7_time2")}：
+                          <input type="text" id="device_set7_time2" name="device_set7[TIME2]" />
+                          {:L("lb_form_device_set7_minute")}</div>
+                        <div>{:L("lb_form_device_set7_time3")}：
+                          <input type="text" id="device_set7_time3" name="device_set7[TIME3]" />
+                          {:L("lb_form_device_set7_minute")}</div>
+                        <input type="hidden" id="device_set7_default_flg" name="device_set7[default_flg]" value="Y" /></td>
+                      <td class="popup_box_comm_2r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_3" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_3m">----------&nbsp;</td>
+                      <td class="popup_box_comm_3r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                  </table>
+                </div>
+                <!-- *******popup box device set ***********end****** --></td>
+              <td width="25%">&nbsp;</td>
+            </tr>
+            <tr>
+              <td width="25%">{:L("lb_form_device_set8_title")}</td>
+              <td width="50%"><input type="button" class="txtbox1 device_set8" id="device_set8_default" name="device_set8_default" value="{:L('lb_form_default_setting')}" onClick="javascript:showPopupBoxCommon('8','default');" />
+                <input type="button" class="txtbox2 device_set8 margin_left50" id="device_set8_diy_setting" name="device_set8_diy_setting" value="{:L('lb_form_diy_setting')}" onClick="javascript:showPopupBoxCommon('8','diy_setting');" />
+                <!-- *******popup box device set ***********start****** -->
+                <div id="device_set8_box" class="popup_box_comm" style="width:300px;display:none;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                    <tr>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                      <td class="" style="width:60px;">&nbsp;</td>
+                      <td class="">&nbsp;</td>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_1" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_1m">----------&nbsp;</td>
+                      <td class="popup_box_comm_1r" style="width:20px;"><a href="javascript:void(0);" onclick="javascript:closePopupBoxCommon('8');">√&nbsp;&nbsp;</a></td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_2" style="width:20px;">&nbsp;</td>
+                      <td class="popup_box_comm_2m" colspan="2"><div>{:L("lb_form_device_set8_time1")}：
+                        <input type="text" id="device_set8_time1" name="device_set8[TIME1]" />
+                      </div>
+                        <div>{:L("lb_form_device_set8_time2")}：
+                          <input type="text" id="device_set8_time2" name="device_set8[TIME2]" />
+                        </div>
+                        <div>{:L("lb_form_device_set8_time3")}：
+                          <input type="text" id="device_set8_time3" name="device_set8[TIME3]" />
+                        </div>
+                        <input type="hidden" id="device_set8_default_flg" name="device_set8[default_flg]" value="Y" /></td>
+                      <td class="popup_box_comm_2r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_3" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_3m">----------&nbsp;</td>
+                      <td class="popup_box_comm_3r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                  </table>
+                </div>
+                <!-- *******popup box device set ***********end****** --></td>
+              <td width="25%">&nbsp;</td>
+            </tr>
+            <tr class="device_temp">
+              <td width="25%">{:L("lb_form_device_set9_title")}</td>
+              <td width="50%"><input type="button" class="txtbox1 device_set9" id="device_set9_default" name="device_set9_default" value="{:L('lb_form_default_setting')}" onClick="javascript:showPopupBoxCommon('9','default');" />
+                <input type="button" class="txtbox2 device_set9 margin_left50" id="device_set9_diy_setting" name="device_set9_diy_setting" value="{:L('lb_form_diy_setting')}" onClick="javascript:showPopupBoxCommon('9','diy_setting');" />
+                <!-- *******popup box device set ***********start****** -->
+                <div id="device_set9_box" class="popup_box_comm" style="width:300px;display:none;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                    <tr>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                      <td class="" style="width:60px;">&nbsp;</td>
+                      <td class="">&nbsp;</td>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_1" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_1m">----------&nbsp;</td>
+                      <td class="popup_box_comm_1r" style="width:20px;"><a href="javascript:void(0);" onclick="javascript:closePopupBoxCommon('9');">√&nbsp;&nbsp;</a></td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_2" style="width:20px;">&nbsp;</td>
+                      <td class="popup_box_comm_2m" colspan="2"><div>{:L("lb_form_device_set9_time1")}：
+                        <input type="text" id="device_set9_time1" name="device_set9[TIME1]" />
+                        {:L("lb_form_device_set9_minute")}</div>
+                        <div>{:L("lb_form_device_set9_time2")}：
+                          <input type="text" id="device_set9_time2" name="device_set9[TIME2]" />
+                          {:L("lb_form_device_set9_minute")}</div>
+                        <div>{:L("lb_form_device_set9_time3")}：
+                          <input type="text" id="device_set9_time3" name="device_set9[TIME3]" />
+                          {:L("lb_form_device_set9_minute")}</div>
+                        <input type="hidden" id="device_set9_default_flg" name="device_set9[default_flg]" value="Y" /></td>
+                      <td class="popup_box_comm_2r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_3" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_3m">----------&nbsp;</td>
+                      <td class="popup_box_comm_3r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                  </table>
+                </div>
+                <!-- *******popup box device set ***********end****** --></td>
+              <td width="25%">&nbsp;</td>
+            </tr>
+            <tr class="device_temp">
+              <td width="25%">{:L("lb_form_device_set10_title")}</td>
+              <td width="50%"><input type="button" class="txtbox1 device_set10" id="device_set10_default" name="device_set10_default" value="{:L('lb_form_default_setting')}" onClick="javascript:showPopupBoxCommon('10','default');" />
+                <input type="button" class="txtbox2 device_set10 margin_left50" id="device_set10_diy_setting" name="device_set10_diy_setting" value="{:L('lb_form_diy_setting')}" onClick="javascript:showPopupBoxCommon('10','diy_setting');" />
+                <!-- *******popup box device set ***********start****** -->
+                <div id="device_set10_box" class="popup_box_comm" style="width:300px;display:none;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                    <tr>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                      <td class="" style="width:60px;">&nbsp;</td>
+                      <td class="">&nbsp;</td>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_1" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_1m">----------&nbsp;</td>
+                      <td class="popup_box_comm_1r" style="width:20px;"><a href="javascript:void(0);" onclick="javascript:closePopupBoxCommon('10');">√&nbsp;&nbsp;</a></td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_2" style="width:20px;">&nbsp;</td>
+                      <td class="popup_box_comm_2m" colspan="2"><div>{:L("lb_form_device_set10_t1")}：
+                        <input type="text" id="device_set10_low_t" name="device_set10[LOW_T]" />
+                      </div>
+                        <div>{:L("lb_form_device_set10_t2")}：
+                          <input type="text" id="device_set10_hight_t" name="device_set10[HIGHT_T]" />
+                        </div>
+                        <div>{:L("lb_form_device_set10_t3")}：
+                          <input type="text" id="device_set10_method" name="device_set10[METHOD]" />
+                        </div>
+                        <input type="hidden" id="device_set10_default_flg" name="device_set10[default_flg]" value="Y" /></td>
+                      <td class="popup_box_comm_2r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_3" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_3m">----------&nbsp;</td>
+                      <td class="popup_box_comm_3r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                  </table>
+                </div>
+                <!-- *******popup box device set ***********end****** --></td>
+            </tr>
+            <tr>
+              <td width="25%">{:L('lb_tracking_alert_period')}</td>
+              <td width="50%"><input type="button" class="txtbox1 device_set14" id="device_set14_default" name="device_set14_default" value="{:L('lb_form_default_setting')}" onClick="javascript:showPopupBoxCommon('14','default');" />
+                <input type="button" class="txtbox2 device_set14 margin_left50" id="device_set14_diy_setting" name="device_set14_diy_setting" value="{:L('lb_form_diy_setting')}" onClick="javascript:showPopupBoxCommon('14','diy_setting');" />
+                <!-- *******popup box device set ***********start****** -->
+                <div id="device_set14_box" class="popup_box_comm" style="width:300px;display:none;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                    <tr>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                      <td class="" style="width:60px;">&nbsp;</td>
+                      <td class="">&nbsp;</td>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_1" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_1m">------------------------------&nbsp;</td>
+                      <td class="popup_box_comm_1r" style="width:20px;"><a href="javascript:void(0);" onclick="javascript:closePopupBoxCommon('14');">√&nbsp;&nbsp;</a></td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_2" style="width:20px;">&nbsp;</td>
+                      <td class="popup_box_comm_2m" colspan="2"><div>{:L('lb_form_device_set7_time1')}：
+                        <input type="text" id="device_set14_time1" name="device_set14[TIME1]" />
+                        {:L('lb_form_device_set7_minute')}</div>
+                        <div>{:L('lb_form_device_set7_time2')}：
+                          <input type="text" id="device_set14_time2" name="device_set14[TIME2]" />
+                          {:L('lb_form_device_set7_minute')}</div>
+                        <div>{:L('lb_form_device_set7_time3')}：
+                          <input type="text" id="device_set14_time3" name="device_set14[TIME3]" />
+                          {:L('lb_form_device_set7_minute')}</div>
+                        <input type="hidden" id="device_set14_default_flg" name="device_set14[default_flg]" value="Y" /></td>
+                      <td class="popup_box_comm_2r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_3" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_3m">------------------------------&nbsp;</td>
+                      <td class="popup_box_comm_3r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                  </table>
+                </div>
+                <!-- *******popup box device set ***********end****** --></td>
+              <td>&nbsp;</td>
+            </tr>
+            <tr>
+              <td width="25%">{:L('lb_agps_period')}</td>
+              <td width="50%"><input type="button" class="txtbox1 device_set15" id="device_set15_default" name="device_set15_default" value="{:L('lb_form_default_setting')}" onClick="javascript:showPopupBoxCommon('15','default');" />
+                <input type="button" class="txtbox2 device_set15 margin_left50" id="device_set15_diy_setting" name="device_set15_diy_setting" value="{:L('lb_form_diy_setting')}" onClick="javascript:showPopupBoxCommon('15','diy_setting');" />
+                <!-- *******popup box device set ***********start****** -->
+                <div id="device_set15_box" class="popup_box_comm" style="width:300px;display:none;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                    <tr>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                      <td class="" style="width:60px;">&nbsp;</td>
+                      <td class="">&nbsp;</td>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_1" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_1m">------------------------------&nbsp;</td>
+                      <td class="popup_box_comm_1r" style="width:20px;"><a href="javascript:void(0);" onclick="javascript:closePopupBoxCommon('15');">√&nbsp;&nbsp;</a></td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_2" style="width:20px;">&nbsp;</td>
+                      <td class="popup_box_comm_2m" colspan="2"><div class="clear0">
+                        <div class="float_left w100">{:L('lb_status')}</div>
+                        <div class="float_left">
+                          <input type="checkbox" id="device_set15_arg1" name="device_set15[arg1]" checked="checked" />
+                        </div>
+                      </div>
+                        <input type="hidden" id="device_set15_default_flg" name="device_set15[default_flg]" value="Y" /></td>
+                      <td class="popup_box_comm_2r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_3" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_3m">------------------------------&nbsp;</td>
+                      <td class="popup_box_comm_3r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                  </table>
+                </div>
+                <!-- *******popup box device set ***********end****** --></td>
+              <td>&nbsp;</td>
+            </tr>
+          </table>
+          <div class="bg" style="height:25px;line-height:25px;margin:1px;"><b>{:L("lb_form_service_setting")}</b></div>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+            <tr>
+              <td width="25%">{:L("lb_form_device_set2_title")}</td>
+              <td width="50%"><input type="button" class="txtbox1 device_set2" value="{:L('lb_form_device_set2_auto')}" id="device_set2_default" onClick="javascript:showPopupBoxCommon('2','default');$('device_set2').val(1)" />
+                <input type="button" class="txtbox2 device_set2 margin_left50" id="device_set2_diy_setting" value="{:L('lb_form_device_set2_manual')}" onClick="javascript:showPopupBoxCommon('2','diy_setting');$('device_set2').val(0)" />
+                <input name="device_set2" id="device_set2" type="hidden" value="1" /></td>
+            </tr>
+            <tr>
+              <td width="25%">{:L("lb_form_device_set3_title")}</td>
+              <td width="50%"><input type="button" class="txtbox1 device_set3" id="device_set3_default" name="device_set3_default" value="{:L('lb_form_default_setting')}" onClick="javascript:showPopupBoxCommon('3','default');" />
+                <input type="button" class="txtbox2 device_set3 margin_left50" id="device_set3_diy_setting" name="device_set3_diy_setting" value="{:L('lb_form_diy_setting')}" onClick="javascript:showPopupBoxCommon('3','diy_setting');" />
+                <!-- *******popup box device set ***********start****** -->
+                <div id="device_set3_box" class="popup_box_comm" style="width:300px;display:none;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+                    <tr>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                      <td class="" style="width:60px;">&nbsp;</td>
+                      <td class="">&nbsp;</td>
+                      <td class="" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_1" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_1m">----------&nbsp;</td>
+                      <td class="popup_box_comm_1r" style="width:20px;"><a href="javascript:void(0);" onclick="javascript:closePopupBoxCommon('3');">√&nbsp;&nbsp;</a></td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_2" style="width:20px;">&nbsp;</td>
+                      <td class="popup_box_comm_2m" colspan="2"><div>{:L("lb_form_device_set3_day")}：
+                        <input type="text" id="device_set3_day" name="device_set3[day]" />
+                      </div>
+                        <input type="hidden" id="device_set3_default_flg" name="device_set3[default_flg]" value="Y" /></td>
+                      <td class="popup_box_comm_2r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="popup_box_comm_3" style="width:80px;" colspan="2">&nbsp;</td>
+                      <td class="popup_box_comm_3m">----------&nbsp;</td>
+                      <td class="popup_box_comm_3r" style="width:20px;">&nbsp;</td>
+                    </tr>
+                  </table>
+                </div>
+                <!-- *******popup box device set ***********end****** --></td>
+              <td width="25%">&nbsp;</td>
+            </tr>
+          </table>
+          <div style="height:25px;line-height:25px;margin:1px;"><b>{:L("lb_form_service_fee")}</b></div>
+          <div style="height:25px;line-height:25px;margin:1px;" class="btn2"><a>{:L("lb_form_service_pay")}</a></div>
+        </div>
+        <div id="data_edit_content_3" class="data_edit_content" style="display:none;padding-left:15px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+            <tr>
+              <td><div class="showimg" id="add_beacons_box"> <a class="add" style="height:24px; line-height:22px;" href="javascript:addBeacon();"> + </a></div></td>
+            </tr>
+            <tr>
+              <td id="beacons"><div class="showlist" id="beacons0_box">
+                <div style="float: left; padding-left:4px;">
+                {:L("lb_form_beacom_title")}&nbsp;&nbsp;<input name="beacons[beaconID][]" type="text" value="" id="beacons_beaconID0" maxlength="8" size="6" />
+                </div><div style="float: left; padding-left:4px;">
+                {:L("lb_form_beacom_name")}&nbsp;&nbsp;<input name="beacons[name][]" type="text" value="" id="beacons_name0" size="12" />
+                </div><div style="float: left; padding-left:4px;">
+                {:L("lb_form_beacom_address")}&nbsp;&nbsp;<input type="text" id="beacons_address0" name="beacons[0][address]" style="vertical-align:middle;" size="45" />
+                <img src="__PUBLIC__/images/location_icon.png" style="vertical-align:middle;" onclick="getPoint(0)" width="20" alt="" />
+                </div> <div style="float: left; padding-left:4px;">
+                {:L("lb_form_beacom_lat")}&nbsp;&nbsp;<input type="text" id="beacons_lat0" name="beacons[0][lat]" size="8" readonly />
+                </div>
+                <div style="float: left; padding-left:4px; vertical-align:middle;">
+                {:L("lb_form_beacom_lon")}&nbsp;&nbsp;<input type="text" id="beacons_lon0" name="beacons[0][lon]" size="8" readonly />
+                </div><div style="float: right; width:60px;">
+                <a class="add" style="height:20px;font-size: 12px;font-weight:200;line-height:20px;" href="javascript:delBeacon('beacons0');">{:L("lb_form_beacom_btn")}</a>
+                </div></div></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <table width="100%" >
+        <tbody>
+          <tr>
+            <td align="center" class="bd pd"><input type="button" value="{:L("lb_btn_enter")}" class="btnBlue" onClick="mfSubmit()" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+<div id="map_box" style="display:none;">
+  <div style="height:35px;line-height:35px;">
+    <div id="float_search_bar">
+      <label>Please drag the marker to adjust the location</label>
+      <button onclick="return $('#map_box').hide(),false;">X</button>
+    </div>
+  </div>
+  <div id="preview">
+    <div id="map_container"></div>
+    <div id="result" style="margin-top: 13px;">  LATITUDE/LONGITUDE:
+      <input id="map" name="map" type="text" value="">
+      <input type="button" value="OK" onclick="setMap()">
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+var adds_num=0,pos;
+
+function Round(n, pos) {
+	var digits = Math.pow(10, pos);
+	var sign = 1;
+	if (n < 0) {
+		sign = -1;
+	}
+
+	n = n * sign;
+	var num = Math.round(n * digits) / digits;
+	num = num * sign;
+
+	return num.toFixed(pos);
+}
+
+initMap=function(){
+	var map = new BMap.Map("map_container");
+	map.enableScrollWheelZoom();
+	map.addControl(new BMap.NavigationControl());  //添加默认缩放平移控件钮
+	window.map=map;
+}
+initMap_google=function(){
+	var lat_tmp=37.392230;
+	var lon_tmp=126.969847;
+	var map_icon = "__PUBLIC__/images/location_icon.png";
+	var latlng = new google.maps.LatLng(lat_tmp, lon_tmp);
+	var options = {
+		zoom: 17,
+		center: latlng,
+		disableDefaultUI: true,
+		panControl: true,
+		zoomControl: true,
+		mapTypeControl: true,
+		scaleControl: true,
+		streetViewControl: false,
+		overviewMapControl: true,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	var map = new google.maps.Map(document.getElementById("map_container"), options);
+	map.setZoom(17);
+	map.setCenter(new google.maps.LatLng(lat_tmp, lon_tmp));
+	window.map=map;
+}
+initPoint=function(point){
+	map.clearOverlays();
+	map.centerAndZoom(point,15);
+	$("#map").val(point.lng + ", " + point.lat);
+}
+initPoint_google=function(point){
+	map.setCenter(point);
+	map.setZoom(17);
+
+	$("#map").val(point.lng() + ", " + point.lat() );
+}
+initMarket=function(point){
+	marker=new BMap.Marker(point);
+	marker.enableDragging();
+	map.addOverlay(marker);
+	marker.addEventListener("mouseup", function(e){
+		pos = this.getPosition();
+		$("#map").val(pos.lng + ", " + pos.lat);
+	});
+}
+initSearch=function(str){
+	var myGeo = new BMap.Geocoder();
+	myGeo.getPoint(str, function(point){
+		if(point){
+			map.centerAndZoom(point, 15);
+			setTimeout(function(){initMarket(point)},500);
+		}else{
+			alert("您选择地址没有解析到结果!");
+		}
+	}, "中国");
+}
+initSearch_google=function(str){
+	var lat_tmp=37.392230;
+	var lon_tmp=126.969847;
+	var pos_tmp = new google.maps.LatLng(lat_tmp, lon_tmp);
+
+	var geocoder =  new google.maps.Geocoder();
+
+	geocoder.geocode({'address': str}, function(results, status) {
+		if (status === google.maps.GeocoderStatus.OK) {
+		  pos_tmp = results[0].geometry.location;
+		  pos = results[0].geometry.location;
+		  map.setCenter(pos);
+		} else {
+		  alert('Geocode was not successful for the following reason: ' + status);
+		}
+
+		var marker = new google.maps.Marker({
+			map: map,
+			draggable: true,
+			position: pos_tmp
+		});
+
+		google.maps.event.addListener(marker, 'dragend', function(event) {
+			var lon=Round(event.latLng.lng(),7);
+			var lat= Round(event.latLng.lat(),7);
+			pos = new google.maps.LatLng(lat, lon);
+			$("#map").val(lon + ", " + lat);
+		});
+	});
+}
+setMap = function(){
+	if ( {$default_map_dj}=='2' )
+	{
+		$('#beacons_lat'+adds_num).val(pos.lat());
+		$('#beacons_lon'+adds_num).val(pos.lng());
+	}
+	else
+	{
+		$('#beacons_lat'+adds_num).val(pos.lat);
+		$('#beacons_lon'+adds_num).val(pos.lng);
+	}
+	window.map=map=null;
+	return $('#map_box').hide(),false;
+}
+getPoint = function(i){
+    if($("#beacons_address"+i).val().length<=0) return;
+	$('#map_box').show();
+	adds_num = i;
+	if($('#beacons_lat'+i).val().length>0&&$('#beacons_lon'+i).val().length>0){
+		var point = new BMap.Point($('#beacons_lon'+i).val(), $('#beacons_lat'+i).val());
+		if ( {$default_map_dj}=='2' )
+		{
+			initMap_google();
+			point = new google.maps.LatLng($('#beacons_lat'+i).val(), $('#beacons_lon'+i).val());
+			initPoint_google(point);
+			var marker = new google.maps.Marker({
+				map: map,
+				draggable: true,
+				position: point
+			});
+
+			google.maps.event.addListener(marker, 'dragend', function(event) {
+				var lon=Round(event.latLng.lng(),7);
+				var lat= Round(event.latLng.lat(),7);
+				pos = new google.maps.LatLng(lat, lon);
+				$("#map").val(lon + ", " + lat);
+			});
+		}
+		else
+		{
+			initMap();
+			initPoint(point);
+			setTimeout(function(){initMarket(point)},500);
+		}
+	}else{
+		if ( {$default_map_dj}=='2' )
+		{
+			initMap_google();
+			initSearch_google($("#beacons_address"+i).val());
+		}
+		else
+		{
+			initMap();
+			initSearch($("#beacons_address"+i).val());
+		}
+	}
+}
+</script>
+</body>
+</html>

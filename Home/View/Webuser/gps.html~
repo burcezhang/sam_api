@@ -1,0 +1,261 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak={:C('BAIDU_AK')}"></script>
+<script type="text/javascript" src="__PUBLIC__/js/convertor.js"></script>
+<script src="__PUBLIC__/layer/layer.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+var popup_action_box_show = false;
+var returnData = eval('({$agedinfo})');
+var map;
+var myGeoIcon = new BMap.Icon("__PUBLIC__/images/location_icon.png", new BMap.Size(40,51));
+function resize(){
+	var size = parent.getBrowerSize();
+	$('#wrap').width(size.width);
+	$('#wrap').height(size.height);
+	$('.videoListTable').width(size.width);
+	$('.videoListTable').height(size.height);
+	$('#allmap').width(size.width);
+	$('#allmap').height(size.height);
+}
+$(document).ready(function(e) {
+   /* var str=[];
+    str.push('<span class="search">');
+    str.push('<form action="" method="get" class="forms" id="fm1">');
+    str.push('<div class="searchBar ml50 fl">');
+    str.push('<input type="text" autofocus="autofocus" placeholder="{:L("common_ALL_SERASH_TITLE")}" name="keyword" id="keyword" value="{$keyword}" class="keyword" />');
+    str.push('<input type="submit" value="{:L("common_ALL_SERASH")}" class="btnSearch" />');
+    str.push('</div></form></span>');		
+    $('#bread').html(str.join(""));
+	*/
+	resize();
+	dropAlertBox();
+//alert('dj : map='+$default_map_dj );
+//	if ( {$default_map_dj}=='2' )
+//		initGoogleMap(:C('BAIDU_INIT_LON')},{:C('BAIDU_INIT_LAT')});
+//	else
+		initBaiduMap({:C('BAIDU_INIT_LON')},{:C('BAIDU_INIT_LAT')});
+	initAgedInfo();
+	registerMapEvent(true);	
+});
+$(window).bind("resize",function(){resize();});
+function closePopupBox(){
+	$('#popup_window_content').html("&nbsp;");
+	popup_action_box_show=false;
+}
+
+function getSex(sex){
+	if(sex==1){
+		return "{:L('lb_popup_sex_value1')}";
+	}else{
+		return "{:L('lb_popup_sex_value0')}";
+	}
+}
+
+function getUserImg(imgsrc){
+	if(imgsrc.length>5){
+		return '<img src="'+imgsrc+'" width="80" height="80" />';
+	}else{
+		return '<img src="__PUBLIC__/images/pager_num_bg.png" width="80" height="80" />';
+	}
+}
+function initAgedInfo(){
+	var returnData = eval('({$agedinfo})');//转换为json对象
+	
+	$('#btn_agedid_'+returnData.agedid).attr('class','btn3');
+	
+	if(returnData.agedid>0 && returnData.gps>0){
+		popup_action_box_show=true;
+		getAgedInfoHtml(returnData);
+
+		BMap.Convertor.translate(new BMap.Point(returnData.protocol_data.LOC_INFO.LONGITUDE,returnData.protocol_data.LOC_INFO.LATITUDE),0,function(point){
+			var geoc = new BMap.Geocoder();
+			
+			geoc.getLocation(point, function(rs){
+				var addComp = rs.addressComponents;
+				//alert(addComp.province + ", " + addComp.city + ", " + addComp.district + ", " + addComp.street + ", " + addComp.streetNumber);
+				//addr = addComp.city;
+				
+				$('.popup_gps_address').html(addComp.province + "," + addComp.city + "," + addComp.district + "," + addComp.street + "," + addComp.streetNumber);
+				$.post("{:U('Index/getBaiduWeather')}",{cityName:addComp.city},function(returnData){
+					if(returnData.error==0){
+						var sWeather = returnData.currentCity + '<br/>' + returnData.weather_data.weather + ' ' + returnData.weather_data.temperature;
+						$('.popup_action_box_bottom_info1').html(sWeather);
+					}
+				});
+				
+			});
+			
+			if ( {$default_map_dj}=='2' )
+				initGoogleMap(returnData.protocol_data.LOC_INFO.LATITUDE, returnData.protocol_data.LOC_INFO.LONGITUDE);
+			else
+				initBaiduMap(point.lng,point.lat,returnData.elderly_info.photo_src);
+		});
+	}else{
+		if(returnData.agedid>0) layer.alert('{:L("alert_get_data_fail")}');
+	}
+}
+function getGpsFixType(FixType){
+	switch(FixType){
+		case 0:
+			return "{:L('lb_gps_fix_type0')}";
+		break;
+		case 1:
+			return "{:L('lb_gps_fix_type1')}";
+		break;
+		case 2:
+			return "{:L('lb_gps_fix_type2')}";
+		break;
+		case 3:
+			return "{:L('lb_gps_fix_type3')}";
+		break;
+		case 4:
+			return "{:L('lb_gps_fix_type4')}";
+		break;
+		case 5:
+			return "{:L('lb_gps_fix_type5')}";
+		break;
+	}
+}
+
+function registerMapEvent(flg){
+	if(flg){
+		$('.geo_toolbar').css('display','none');
+		$('.geo_toolbar_trace_nav').css('display','none');
+	}else{
+		$('.geo_toolbar').css('display','');	
+		$('.geo_toolbar_trace_nav').css('display','');
+	}
+}
+
+function addClickHandler(content,marker){
+	marker.addEventListener("click",function(e){
+		openInfo(content,e)}
+	);
+}
+function openInfo(content,e){
+	var opts = {
+				width : 300,    
+				height: 80,    
+				title : "" , 
+				enableMessage:false
+			   };
+	var p = e.target;
+
+	var point =new BMap.Point(p.getPosition().lng, p.getPosition().lat);
+		var myGeo = new BMap.Geocoder();
+		myGeo.getLocation(point, function(rs){
+			var addComp = rs.addressComponents;
+			var txtAddress = addComp.province + addComp.city + addComp.district + addComp.street + addComp.streetNumber;
+			content=content.replace(/ADDRESS/, txtAddress)
+			var infoWindow = new BMap.InfoWindow(content,opts);  
+			map.openInfoWindow(infoWindow,point);
+		});
+}
+
+function show_trace(flg){
+	if(returnData.agedid<=0) return;
+	if(popup_action_box_show){ closePopupBox(); };
+	map.clearOverlays();
+	registerMapEvent(false);
+
+	$.post("{:U('Webuser/get_aged_trace')}",{agedid:returnData.agedid, currdate:$('.geo_toolbar_trace_nav_text').html(), dateflg:flg},function(reData){
+
+		$('.geo_toolbar_trace_nav_text').html(reData.currdate);
+		if(reData.error==0 && reData.trace>0){
+			var igeo=0;
+			var lon = reData.info[igeo].Lon;
+			var lat = reData.info[igeo].Lat;
+			translateCallback = function (point){
+				if(igeo==0){
+					map.centerAndZoom(point, 15);
+				}
+			
+				var marker = new BMap.Marker(point,{icon:myGeoIcon});  
+				var content = '{:L("lb_title_address")}:ADDRESS<br/>{:L("lb_title_type")}:'+getGpsFixType(reData.info[igeo].FixType)+'<br/>{:L("lb_title_time")}:'+reData.info[igeo].GPSTime;
+				map.addOverlay(marker);             
+				addClickHandler(content,marker);
+				if(igeo < reData.trace){
+					igeo++;
+					var lon = reData.info[igeo].Lon;
+					var lat = reData.info[igeo].Lat;
+					BMap.Convertor.translate(new BMap.Point(lon,lat),0,translateCallback);
+				}
+			}
+			BMap.Convertor.translate(new BMap.Point(lon,lat),0,translateCallback);
+		}else{
+			layer.msg(reData.info+'{:L("alert_get_data_fail")}', 1, 1);
+		}
+	});
+}
+
+function getAgedInfoHtml(sinfo){
+	var sHistoryLink = '{:U("Webuser/history")}';
+	var sHtml='<div id="popup_action_box" class="popup_action_box2" style="height:215px;">' +
+			'	<div class="popup_action_box_header">' +
+			'		<div class="popup_action_box_title">{:L("lb_popup_title")}['+getGpsFixType(sinfo.protocol_data.LOC_INFO.FIX_TYPE)+']['+(sinfo.protocol_data.LOC_INFO.LONGITUDE).toFixed(6)+','+(sinfo.protocol_data.LOC_INFO.LATITUDE).toFixed(6)+']</div>' +
+			'		<div class="popup_action_box_close"><a href="javascript:void(0);" onclick="javascript:closePopupBox();">CLOSE</a></div>' +
+			'		<div class="popup_action_box_history"><a href="javascript:void(0);" onclick="javascript:show_trace(0);">HISTORY</a></div>' +
+			'	</div>' +
+			'	<div class="popup_action_box_content">' +
+			'		<div style="width:470px;height:145px;margin:1px auto;background:#ffffff;">' +
+			'			<div class="popup_action_box_img">'+getUserImg(sinfo.elderly_info.photo_src)+'</div>' +
+			'			<div class="popup_action_box_baseinfo" style="width:370px;">' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_name")}：'+sinfo.elderly_info.elderly_name+'</div>' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_sex")}：'+getSex(sinfo.elderly_info.sex)+'</div>' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_age")}：'+sinfo.elderly_info.age+'</div>' +
+			'			</div>' +
+			'			<div class="clear5"></div>' +
+			'			<div class="clear0 txtbox4" style="width:450px;">&nbsp;&nbsp;<span class="popup_gps_address"></span>&nbsp;&nbsp;Time : '+sinfo.protocol_data.LOC_INFO.TIME_STAMP+'</div>' +
+			'		</div>' +			
+			'	</div>' +
+			'	<div class="popup_action_box_bottom2">' +
+			'		<div class="popup_action_box_bottom_info1">--</div>' +
+			'		<div class="popup_action_box_bottom_info2">'+sinfo.protocol_data.STEP+'</div>' +
+			'		<div class="popup_action_box_bottom_info3">'+sinfo.protocol_data.BATT+'%</div>' +
+			'	</div>' +
+			'</div>';
+	//return sHtml;
+	$('#popup_window_content').html(sHtml);
+	$('#popup_window').css('left',$(window).width()/2-$('#popup_window_content').width()/2);
+	$('#popup_window').css('top',$(window).height()/2-$('#popup_window_content').height()/2-136);
+}
+</script>
+<include file="Public:commjs" />
+</head>
+<body>
+<div id="wrap" class="videoList" style="padding:0;">
+   <!-- <div class="crumbs mb5" id="bread"></div> -->
+    <div class="videoListTable">
+    <div id="allmap"></div>
+    <div class="content_right1">
+        <volist id="vo" name="datalist">
+        <div id="btn_agedid_{$vo.id}" class="btn4"><a href="{:U('Webuser/gps?id='.$vo['id'].'')}">{$vo.elderly_name}</a></div>
+        </volist>
+    </div>
+    </div>
+</div>
+<div id="popup_window" class="popup_window" style="">
+	<div id="popup_window_title" class="popup_window_title">&nbsp;</div>
+	<div id="popup_window_content" class="popup_window_content"></div>
+</div>
+<div class="geo_toolbar">
+	<div class="geo_toolbar_icon2"><a href="javascript:void(0);" onclick="javascript:show_trace('0');">SHOW TRACE</a></div>
+</div>
+<div class="geo_toolbar_trace_nav" style="display:none;">
+	<div class="geo_toolbar_trace_nav_btn1 float_left"><a href="javascript:void(0);" onclick="javascript:show_trace('-1day');">-1day</a></div>
+	<div class="geo_toolbar_trace_nav_btn2 float_right"><a href="javascript:void(0);" onclick="javascript:show_trace('+1day');">+1day</a></div>
+	<div class="geo_toolbar_trace_nav_text">{$currdate}</div>
+</div>
+</body>
+</html>

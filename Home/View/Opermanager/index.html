@@ -1,0 +1,235 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+	<if condition="$default_map_dj == 2 ">
+		<script src="https://maps.googleapis.com/maps/api/js?key={:C('GOOGLE_AK')}" async defer></script>
+		<else />
+		<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak={:C('BAIDU_AK')}"></script>
+	</if>
+<script type="text/javascript" src="__PUBLIC__/js/convertor.js"></script>
+<script src="__PUBLIC__/js/common.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/jquery.form.js" type="text/javascript"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+function resize(){
+	var size = parent.getBrowerSize();
+	$('#wrap').width(size.width);
+	$('#wrap').height(size.height);
+	$('.videoListTable').width(size.width);
+	$('.videoListTable').height(size.height);
+	$('#allmap').width(size.width);
+	$('#allmap').height(size.height);
+	$('.content_right').height(size.height-18);
+}
+$(document).ready(function(e) {
+    /*var str=[];
+    str.push('<span class="search">');
+    str.push('<form action="" method="get" class="forms" id="fm1">');
+    str.push('<div class="searchBar ml50 fl">');
+    str.push('<input type="text" autofocus="autofocus" placeholder="{:L("common_ALL_SERASH_TITLE")}" name="keyword" id="keyword" value="{$keyword}" class="keyword" />');
+    str.push('<input type="submit" value="{:L("common_ALL_SERASH")}" class="btnSearch" />');
+    str.push('</div></form></span>');		
+    $('#bread').html(str.join(""));
+	*/
+	resize();
+	if ( {$default_map_dj}=='2' )
+		initGoogleMap();
+	else
+		initBaiduMap({:C('BAIDU_INIT_LON')},{:C('BAIDU_INIT_LAT')});
+    show_user_online_info(1,first_device_sn);	
+});
+$(window).bind("resize",function(){resize();});
+var first_device_sn='{$device_sn}';
+
+function chkFrmOperator(){
+	if($('#operator_id').val()==''){
+		return false;
+	}
+	return true;
+}
+
+function closePopupBox(){
+	$('#popup_window_content').html("&nbsp;");
+	popup_action_box_show=false;
+}
+
+function getSex(sex){
+	if(sex==1){
+		return "{:L('lb_popup_sex_value1')}";
+	}else{
+		return "{:L('lb_popup_sex_value0')}";
+	}
+}
+
+function getUserImg(imgsrc){
+	if(imgsrc.length>5){
+		return '<img src="'+imgsrc+'" width="80" height="80" />';
+	}else{
+		return '<img src="__PUBLIC__/images/pager_num_bg.png" width="80" height="80" />';
+	}
+}
+function show_user_online_info(row_no,device_sn){
+	$('.row').removeClass('row_hover');
+	$('.user_row_'+row_no).addClass('row_hover');
+	$('.bottom_notice_box').css('display','');
+	$.post("{:U('Opermanager/get_last_trace')}",{devicesn:device_sn},function(returnData){
+		//alert(returnData.alt_dt);
+		if(returnData==null || returnData=="null"){
+			$('.bottom_notice_box').html('{:L("lb_last_fix_time")}：0 {:L("lb_last_receive_time")}：0');			
+		}else{
+			$('.bottom_notice_box').html('{:L("lb_last_fix_time")}：'+returnData.gps_dt+' {:L("lb_last_receive_time")}：'+returnData.alt_dt+'');
+			initAgedInfo(returnData);
+		}
+	});
+}
+function initAgedInfo(returnData){
+
+	if(returnData.agedid>0 && returnData.gps>0){
+		popup_action_box_show=true;
+		getAgedInfoHtml(returnData);
+
+		var lat = returnData.protocol_data.LOC_INFO.LATITUDE;
+		var lng = returnData.protocol_data.LOC_INFO.LONGITUDE;
+		if ( {$default_map_dj}=='2' ){
+			initGoogleMap(lat, lng);
+		}else{
+			BMap.Convertor.translate(new BMap.Point(returnData.protocol_data.LOC_INFO.LONGITUDE,returnData.protocol_data.LOC_INFO.LATITUDE),0,function(point) {
+				var geoc = new BMap.Geocoder();
+
+				geoc.getLocation(point, function (rs) {
+					var addComp = rs.addressComponents;
+					//alert(addComp.province + ", " + addComp.city + ", " + addComp.district + ", " + addComp.street + ", " + addComp.streetNumber);
+					//addr = addComp.city;
+
+					$('.popup_gps_address').html(addComp.province + "," + addComp.city + "," + addComp.district + "," + addComp.street + "," + addComp.streetNumber);
+					$.post("{:U('Index/getBaiduWeather')}", {cityName: addComp.city}, function (returnData) {
+						if (returnData.error == 0) {
+							var sWeather = returnData.currentCity + '<br/>' + returnData.weather_data.weather + ' ' + returnData.weather_data.temperature;
+							$('.popup_action_box_bottom_info1').html(sWeather);
+						}
+					});
+
+				});
+				initBaiduMap(point.lng,point.lat,returnData.elderly_info.photo_src);
+			});
+		}
+
+
+	}
+}
+function getGpsFixType(FixType){
+	switch(FixType){
+		case 1:
+			return "{:L('lb_fix_type1')}";
+		break;
+		case 2:
+			return "{:L('lb_fix_type2')}";
+		break;
+		case 3:
+			return "{:L('lb_fix_type3')}";
+		break;
+		case 4:
+			return "{:L('lb_fix_type4')}";
+		break;
+		case 5:
+			return "{:L('lb_fix_type5')}";
+		break;			
+	}
+}
+function getAgedInfoHtml(sinfo){
+	var sHistoryLink = '{:U("Opermanager/historylist")}';
+	var sHtml='<div id="popup_action_box" class="popup_action_box2" style="height:215px;">' +
+			'	<div class="popup_action_box_header">' +
+			'		<div class="popup_action_box_title">{:L("lb_popup_title")}['+getGpsFixType(sinfo.protocol_data.LOC_INFO.FIX_TYPE)+']['+(sinfo.protocol_data.LOC_INFO.LONGITUDE).toFixed(6)+','+(sinfo.protocol_data.LOC_INFO.LATITUDE).toFixed(6)+']</div>' +
+			'		<div class="popup_action_box_close"><a href="javascript:void(0);" onclick="javascript:closePopupBox();">CLOSE</a></div>' +
+			'		<div class="popup_action_box_history"><a href="'+sHistoryLink+'?id='+sinfo.elderly_info.ESN+'">HISTORY</a></div>' +
+			'	</div>' +
+			'	<div class="popup_action_box_content">' +
+			'		<div style="width:470px;height:145px;margin:1px auto;background:#ffffff;">' +
+			'			<div class="popup_action_box_img">'+getUserImg(sinfo.elderly_info.photo_src)+'</div>' +
+			'			<div class="popup_action_box_baseinfo" style="width:370px;">' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_name")}：'+sinfo.elderly_info.elderly_name+'</div>' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_sex")}：'+getSex(sinfo.elderly_info.sex)+'</div>' +
+			'				<div class="txtbox3" style="width:350px;">&nbsp;&nbsp;{:L("lb_popup_age")}：'+sinfo.elderly_info.age+'</div>' +
+			'			</div>' +
+			'			<div class="clear5"></div>' +
+			'			<div class="clear0 txtbox4" style="width:450px;">&nbsp;&nbsp;<span class="popup_gps_address"></span>&nbsp;&nbsp;Time : '+sinfo.protocol_data.LOC_INFO.TIME_STAMP+'</div>' +
+			'		</div>' +			
+			'	</div>' +
+			'	<div class="popup_action_box_bottom2">' +
+			'		<div class="popup_action_box_bottom_info1">'+sinfo.protocol_data.LOC_INFO.TEMPERATURE+'</div>' +
+			'		<div class="popup_action_box_bottom_info2">'+sinfo.protocol_data.STEP+'</div>' +
+			'		<div class="popup_action_box_bottom_info3">'+sinfo.protocol_data.BATT+'%</div>' +
+			'	</div>' +
+			'</div>';
+	//return sHtml;
+	$('#popup_window_content').html(sHtml);
+	$('#popup_window').css('left',$(window).width()/2-$('#popup_window_content').width()/2);
+	$('#popup_window').css('top',$(window).height()/2-$('#popup_window_content').height()/2-136);
+}
+
+
+function chkFrmOnline(page_no){	
+	page_total = {$tpagetotal};
+	if(page_no<1) page_no=1;
+	if(page_no>page_total) page_no=page_total;
+	$('#p').attr('value',page_no);
+	$('#frmOnline').submit();
+}
+</script>
+<include file="Public:commjs" />
+</head>
+<body>
+	<div id="wrap" class="videoList" style="padding:0;">
+		<!--<div class="crumbs mb5" id="bread"></div>-->
+		<div class="videoListTable">
+        <div id="allmap"></div>
+        
+        <div class="content_right">
+            <div class="title">
+						<div class="btn_refresh"><a href="{:U('Opermanager/index')}">Refresh</a></div>
+						<div class="txt">{:L("lb_online")}：{$online_total} {:L("lb_offline")}：{$count_total - $online_total}</div>
+					</div>
+					
+					<volist id="vo" name="datainfo" key="k">
+					<div class="user_row_{$k} row <if condition="($k % 2) eq 0 ">row_diff</if>" onclick="javascript:show_user_online_info('{$k}','{$vo.device_sn}');">
+						<img class="float_left" src="__PUBLIC__/images/user_online_state_<if condition="$vo['alert_dt'] gt 0 ">1<else/>0</if>{$vo.cmd_name}.png" style="margin:4px 5px 0px 25px;" />
+						<div class="float_left h25">{$vo.elderly_name}</div>
+					</div>
+					</volist>
+					
+					<div class="bottom_pager">
+					<form id="frmOnline" method="get" action="{:U('Opermanager/index')}">
+						<input type="hidden" id="p" name="p" value="{$currpage}" />
+						<div class="search">
+							<div class="inputbox"><input type="text" id="agedname" name="agedname" value="{$aged_name}" /></div>
+							<div class="inputbtn"><a href="javascript:void(0);" onclick="javascript:chkFrmOnline(1);">Search</a></div>
+						</div>
+						<div class="ipager">
+							<div class="btn_go1"><a href="javascript:void(0);" onclick="javascript:chkFrmOnline(1);">&lt;&lt;</a></div>
+							<div class="btn_go2"><a href="javascript:void(0);" onclick="javascript:chkFrmOnline({$currpage-1});">&lt;</a></div>
+							<div class="pagetxt">({$currpage}/{$tpagetotal})</div>
+							<div class="btn_go4"><a href="javascript:void(0);" onclick="javascript:chkFrmOnline({$currpage+1});">&gt;</a></div>
+							<div class="btn_go3"><a href="javascript:void(0);" onclick="javascript:chkFrmOnline({$tpagetotal});">&gt;&gt;</a></div>
+						</div>
+					</form>
+					</div>
+	    </div>
+		</div>
+    </div>
+<div id="popup_window" class="popup_window" style="">
+	<div id="popup_window_title" class="popup_window_title">&nbsp;</div>
+	<div id="popup_window_content" class="popup_window_content"></div>
+</div>
+
+</body>
+</html>

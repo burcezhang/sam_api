@@ -1,0 +1,450 @@
+<?php
+namespace Home\Controller;
+
+//use Think\Controller;
+use Common\Controller\CommonController;
+
+class IndexController extends CommonController {
+    public function index(){
+        if(IS_POST){
+			
+			$account = I('post.tb_username');
+			$passwd  = md5(I('post.tb_passwd'));
+			$model = M('User_mas');
+			$datainfo = $model->where("status_flg='Y' and account='$account' and pwd='$passwd'")->find();
+			//var_dump($datainfo);exit;
+			if($datainfo){
+				
+				//$model->where("id=".$datainfo['id'])->setInc('login_count',1);
+				$data['id']=$datainfo['id'];
+				$data['login_count']=(int)$datainfo['login_count'] + 1;
+				$data['login_last_dt']=time();
+				if($datainfo['is_service']=='Y' && $datainfo['service_no']!=''){
+					$data['service_status_flg']='1';
+					$data['service_heart_dt']=time();
+					
+					$datainfo['service_status_flg']='1';
+					$datainfo['service_heart_dt']=time();
+				}
+				$datainfo['role']=M('Group_mas')->where("id=".(int)$datainfo['group_id'])->getField('content');
+				cookie('userinfo',$datainfo);
+				
+				$model->data($data)->save();
+				$this->redirect('Welcome/index','', 1, 'Loading......');
+			}else{
+				//header("Content-type: text/html; charset=utf-8");
+				$this->show('<script type="text/javascript">alert("'.L('alert_login_failed').'");history.go(-1);</script>','utf-8');
+			}
+			
+		}else{
+			$userinfo = cookie('userinfo');
+			if((int)$userinfo['id']){
+				$this->redirect('Welcome/index','', 1, 'Loading......');
+				exit;
+			}
+			$this->display();
+		}
+	}
+	
+	public function reg(){
+        if(IS_POST){
+		
+		$model = M('User_mas');
+		
+		$double_check = $model->where("account='".I('post.account')."'")->find();
+		if($double_check){
+			$oData['error']=2;
+			$oData['info']='Account Double';
+			$this->ajaxReturn($oData,'JSON');
+			exit;
+		}		
+		
+		$model->create();
+		
+		$model->user_type='WEBUSER';
+		$model->pwd=md5(I('post.pwd'));
+		$model->loc_id='1';
+		$model->group_id='0';
+		$model->create_time=getCurrTime();
+		$model->login_count='0';
+		$model->login_last_dt='0';
+		$model->status_flg='Y';
+		$model->home_phone=I('post.phone');
+		$model->area_id='1';
+		$model->area_str='Korea';
+		$model->home_address='';
+		$model->remark='Gudian';
+		$model->is_service='N';
+		$model->service_no='';
+		$model->service_pwd='';
+		$model->service_type='';
+		$model->service_status_flg='0';
+		$model->service_heart_dt='0';
+		//var_dump($model);exit;
+		
+		$user_flg = $model->add();
+		
+		if((int)$user_flg==0){
+			$oData['error']=1;
+			$oData['info']='Fail';
+			
+		}else{
+			$oData['error']=0;
+			$oData['info']='Success';			
+		}		
+		
+		$this->ajaxReturn($oData,'JSON');
+		
+		}else{
+			$this->display();
+		}
+		
+	}
+	
+	public function check_account_double(){
+		$account = I('post.account');
+		$model = M('User_mas');
+		$oData['error'] = (int)($model->where("account='$account'")->getField('id'));
+		$this->ajaxReturn($oData,'JSON');
+	}
+	
+	public function logout(){
+		$userinfo = cookie('userinfo');
+		$data['id']=$userinfo['id'];
+		$data['service_status_flg']=0;
+		$data['service_heart_dt']=0;
+		M('User_mas')->data($data)->save();
+		cookie('userinfo',NULL);
+		//$this->redirect('Index/index','', 1, 'Loading......');
+		
+		$model = M('Sys_var');
+		$audio_set_run = $model->where("var_group='audio_set' and var_name='runing'")->getField('value1');
+		if($audio_set_run){
+			$audio_set_run = unserialize($audio_set_run);
+			$player['logout']=$audio_set_run['logout']['kfile'];
+			$this->assign("player",$player);
+		}
+		
+		$this->display();
+	}
+	
+	public function getCityInfoByCityName(){
+		$args=I('post.city_name');
+		$oData=M('City_info')->where("city_name='$args'")->find();
+		$this->ajaxReturn($oData,'JSON');
+	}
+	public function getCityInfoByPostCode(){
+		$args=I('post.post_code');
+		$oData=M('City_info')->where("post_code='$args'")->find();
+		$this->ajaxReturn($oData,'JSON');
+	}
+	public function getCityInfoByTelCode(){
+		$args=I('post.tel_code');
+		$oData=M('City_info')->where("tel_code='$args'")->find();
+		$this->ajaxReturn($oData,'JSON');
+	}
+	
+	public function getBaiduWeather(){
+		header("Content-type: text/html; charset=utf-8");
+		$args=I('post.cityName');
+		//if(!$args) $args='深圳市';
+		$args='SEOUL';
+
+		$oData = array();
+		//if($args=='深圳市'){
+		if($args=='SEOUL'){		
+			$oData = F('Weather');
+		}
+		if($oData==NULL || count($oData)<=0 || $oData['date']!=toDate(getCurrTime(),'Ymd')){
+			$surl = 'http://api.map.baidu.com/telematics/v3/weather?location='.$args.'&output=json&ak='.C('BAIDU_AK');
+			$weather = file_get_contents($surl);
+			$json_weather = json_decode($weather,true);
+			$oData['error']=$json_weather['error'];
+			$oData['currentCity']=$json_weather['results'][0]['currentCity'];
+			$oData['weather_data']=$json_weather['results'][0]['weather_data'][0];
+			$oData['date']=toDate(getCurrTime(),'Ymd');
+			//if($oData['currentCity']=='深圳市'){
+			if($oData['currentCity']=='SEOUL'){
+				F('Weather',$oData);
+			}
+		}
+		$this->ajaxReturn($oData,'JSON');
+	}
+	
+	public function setUserState(){		
+		$args=(int)I('post.state');
+		if($args){
+			$userinfo = cookie('userinfo');
+			$data['id']=$userinfo['id'];
+			$data['service_status_flg']=$args;
+			$setflg = M('User_mas')->data($data)->save();
+			$userinfo['service_status_flg']=$args;
+			cookie('userinfo',$userinfo);
+		}
+		$oData['setflg']=(int)$setflg;
+		$this->ajaxReturn($oData,'JSON');
+	}
+	
+	public function call7x24(){
+		$get_json = str_replace('undefined','0',html_entity_decode(I('get.json')));
+		$json_de = json_decode($get_json,true);
+		//F('Calllast',$json_de);
+		
+		$userinfo = cookie('userinfo');
+		$logData['user_id']=$userinfo['id'];
+		$logData['act_type']=$json_de['Action'];
+		
+		switch($json_de['CallType']){
+			case 'normal': //来电
+				if($json_de['Action']=='Ring'){
+					//生成紧急来电事件
+					unset($data);
+					$data['alert_type']='EMERGENCY_CALL';
+					$data['alert_dt']=getCurrTime();
+					$data['device_sn']=M('Elderly_info')->field("id,elderly_code,elderly_name,nick_name,photo_src,type,sex,barthday,home_tel,phone,sim,monitor_id,address")->where("phone='".$json_de['CallNo']."' or home_tel='".$json_de['CallNo']."' or sim='".$json_de['CallNo']."'")->getField('device_sn');
+					$data['operator']=M('User_mas')->where("service_no like '".$json_de['Agent']."@%' and service_status_flg='1'")->getField('id');
+					$data['start_time']=0;
+					$data['end_time']=0;
+					$data['voice_src']=$json_de['CallsheetId'];
+					$data['step']=0;
+					$data['status_flg']='W';
+					if($data['device_sn'] && $data['operator']){
+						$logData['act_obj'] = M('Alert_list')->data($data)->add();
+					}
+				}else if($json_de['Action']=='Connected'){
+					//电话接通中
+					unset($data);
+					$data['start_time']=getCurrTime();
+					$data['step']=1;
+					$data['status_flg']='P';
+					M('Alert_list')->data($data)->where("voice_src='".$json_de['CallsheetId']."'")->save();
+					$logData['act_obj'] = M('Alert_list')->where("voice_src='".$json_de['CallsheetId']."'")->getField('id');
+					
+					unset($data);
+					$data['CallSheetID']=$json_de['CallSheetID'];
+					$data['CallState']='Connected';
+					M('Call_list')->data($data)->save();
+					
+			
+				}else if($json_de['Action']=='Hangup'){
+					//结束紧急来电事件
+					unset($data);
+					$data['end_time']=getCurrTime();
+					if($json_de['Status']=='notDeal'){
+							$data['status_flg']='C';
+					}else{
+							//$data['status_flg']='F';
+					}
+					M('Alert_list')->data($data)->where("voice_src='".$json_de['CallsheetId']."'")->save();
+					$logData['act_obj'] = M('Alert_list')->where("voice_src='".$json_de['CallsheetId']."'")->getField('id');
+					
+					unset($data);
+					$data['CallSheetID']=$json_de['CallSheetID'];
+					$data['CallState']='Hangup';
+					M('Call_list')->data($data)->save();
+					
+				}
+			break;
+			case 'dialout': //去电
+				$alertcallout = cookie('alertcallout');
+				$logData['act_obj'] = $alertcallout['id'];
+				//if($json_de['Action']=='Dialing'){
+					//unset($data);
+					//$data['id']=$alertcallout['id'];
+					//$data['voice_src']=array("exp","CONCAT(voice_src,',','".$json_de['CallsheetId']."')");
+					//M('Alert_list')->data($data)->save();
+				//}else if($json_de['Action']=='Connected'){
+					//电话接通中
+				//}else if($json_de['Action']=='Hangup'){
+					//结束
+				//}
+			break;
+		}			
+		
+		
+		$logData['module']='7X24CALL';
+		$logData['notes']=serialize($json_de);
+		$oData['logId']=saveLog($logData);
+	
+		$this->ajaxReturn($oData,'JSON');
+	}
+	
+	public function showCallVoice(){
+		$alertid=(int)I('get.alertid');
+		$voice_list = M('Sys_log')->where("module='7X24CALL' and act_type='Hangup' and notes like '%http%' and act_obj='$alertid'")->order('id asc')->select();
+		foreach($voice_list as $k=>$v){
+			$voice_list[$k]['voice_detail']=unserialize($v['notes']);
+		}
+		$this->assign('voice_count',count($voice_list));
+		$this->assign('voice_list',$voice_list);
+		$this->display();
+	}
+	
+	public function showSmsLog(){
+		$alertid=(int)I('get.alertid');
+		$acttype=I('get.acttype');
+		$sms_list = M('Sys_log')->where("module='SMS' and act_obj='$alertid'")->order('id asc')->select(); // and act_type='$acttype'
+		foreach($sms_list as $k=>$v){
+			$sms_list[$k]['sms_detail']=unserialize($v['notes']);
+		}
+		$this->assign('sms_count',count($sms_list));
+		$this->assign('sms_list',$sms_list);
+		$this->display();
+	}
+	
+	public function uploadify()
+	{
+		if (!empty($_FILES)) {
+			//图片上传设置
+            $config = array(   
+                'maxSize'    =>    2048000, 
+                'savePath'   =>    '',  
+				'rootPath'   =>    '.'.C('UPLOAD_DIR'),  
+                'saveName'   =>    array('uniqid',''), 
+                'exts'       =>    array('jpg', 'gif', 'png', 'jpeg', 'csv','xls', 'txt', 'pdf'),  
+                'autoSub'    =>    false,   
+                'subName'    =>    array('date','Ymd'),
+            );
+            $upload = new \Think\Upload($config);// 实例化上传类
+			$images = $upload->upload();
+			
+			if(!$images){
+				$oData['error']=1;
+				$oData['info']=$upload->getError();				
+			} else {
+				$oData['error']=0;
+				$oData['info'] = $images;
+			}
+			//echo $oData['info'];
+			$this->ajaxReturn($oData,'JSON');
+		}
+		
+	}
+	
+	public function setpwd(){
+        if(IS_POST){
+			$userinfo = cookie('userinfo');
+			$model = M('User_mas');
+			
+			$pwd = I('post.pwd');
+			$pwd2= I('post.pwd2');
+			$check_user = $model->where("id=".$userinfo['id']." and pwd='".md5($pwd)."'")->find();
+			if(!$check_user){
+				$oData['error']=2;
+				$oData['info']='Check Fail';
+				$this->ajaxReturn($oData,'JSON');
+			}
+			$data['id']=$userinfo['id'];
+			$data['pwd']=md5($pwd2);
+			$setting_flg = $model->data($data)->save();
+			if($setting_flg){
+				$oData['error']=0;
+				$oData['info']='Success';
+				
+				//***Log***
+				$logData['notes']['userinfo']['account']=$userinfo['account'];
+				$logData['notes']['userinfo']['true_name']=$userinfo['true_name'];
+				$logData['notes']['agedinfo']['elderly_name']='';
+				$logData['notes']['agedinfo']['nick_name']='';
+				$logData['notes']['result']='Success';
+				$logData['notes']['note']='Change Password';
+				$logData['user_id']=(int)$userinfo['id'];
+				$logData['act_type']='setpwd';
+				$logData['module']='Public';
+				$logData['act_obj']=(int)$userinfo['id'];
+				$logData['notes']=serialize($logData['notes']);
+				saveLog($logData);
+			
+			}else{
+				$oData['error']=1;
+				$oData['info']='Fail';
+			}
+			$this->ajaxReturn($oData,'JSON');
+			
+		}else{
+			$this->display();
+		}
+	}
+	
+	/*
+	平台对外提供四类通话事件接口：
+	1.呼叫振铃Ring
+	2.被呼振铃Ringing
+	3.接通Link
+	4.通话结束Hangup
+	*/
+	public function call7x24Ring(){
+		$get_args = $_GET;
+		$logData['act_type']='Ring';
+		$logData['module']='7X24CALL';
+		$logData['act_obj']='api';
+		$logData['notes']=serialize($get_args);
+		$oData['logId']=saveLog($logData);
+		
+		if($get_args['CallNo'] && $get_args['CallSheetID'] && $get_args['CalledNo']){
+			M('Call_list')->data($get_args)->add();			
+		}
+		
+		echo '200';
+	}
+	public function call7x24Ringing(){
+		$get_args = $_GET;
+		$logData['act_type']='Ringing';
+		$logData['module']='7X24CALL';
+		$logData['act_obj']='api';
+		$logData['notes']=serialize($get_args);
+		$oData['logId']=saveLog($logData);
+		
+		//if($get_args['CallNo'] && $get_args['CallSheetID'] && $get_args['CalledNo']){
+			//M('Call_list')->data($get_args)->add();			
+		//}
+		
+		echo '200';
+	}
+	public function call7x24Link(){
+		$get_args = $_GET;		
+		$oText = '200';
+		$model = M('Call_list');
+		if($get_args['CallNo'] && $get_args['CallSheetID'] && $get_args['CalledNo']){
+			if($model->where("CallSheetID='".$_GET['CallSheetID']."'")->getField('CallNo')){
+				$data['CallSheetID']=$_GET['CallSheetID'];
+				$data['CallState']=$_GET['CallState'];
+				$oText = $model->data($data)->save();
+			}
+		}
+		
+		$logData['act_type']='Link';
+		$logData['module']='7X24CALL';
+		$logData['act_obj']='api';
+		$logData['notes']=serialize($get_args);
+		$oData['logId']=saveLog($logData);
+		
+		echo $oText;
+	}
+	public function call7x24Hangup(){
+		$get_args = $_GET;
+		$oText = '200';
+		$model = M('Call_list');
+		if($get_args['CallNo'] && $get_args['CallSheetID'] && $get_args['CalledNo']){
+			if($model->where("CallSheetID='".$_GET['CallSheetID']."'")->getField('CallNo')){
+				$data['CallSheetID']=$_GET['CallSheetID'];
+				$data['CallState']=$_GET['CallState'];
+				$oText = $model->data($data)->save();
+			}
+		}
+		
+		$logData['act_type']='Hangup';
+		$logData['module']='7X24CALL';
+		$logData['act_obj']='api';
+		$logData['notes']=serialize($get_args);
+		$oData['logId']=saveLog($logData);
+		
+		echo $oText;
+	}
+	
+	public function test(){
+		var_dump(cookie('alertcallout'));
+	}
+	
+	
+}

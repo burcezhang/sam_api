@@ -1,0 +1,56 @@
+{subskins header}
+		<div class="videoListTable">
+            <div class="hit">
+                {$usinfo['username']}，欢迎您使用{:L('common_web_title')}！
+            </div>
+			<table width="100%" id="J-rowColor">
+				<thead>
+					<tr>
+						<th>上次登入时间</th>
+						<th>上次登入IP</th>
+						<th>登入时间</th>
+						<th>登入IP</th>
+						<th>距离上次登入时间</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td align="center">{$usinfo['lasttime']}</td>
+						<td align="center">{$usinfo['lastip']}</td>
+						<td align="center">{$usinfo['logintime']}</td>
+						<td align="center">{$usinfo['loginip']}</td>
+						<td align="center">{$subtime}</td>
+					</tr>
+                    
+					<tr>
+					  	<th align="center">今日订单</th>
+						<th align="center">待跟进订单</th>
+					  	<th align="center">待发货订单</th>
+						<th align="center">待收货订单</th>
+						<th align="center">已完成订单</th>
+					</tr>
+					<tr>
+						<td align="center">20 单</td>
+						<td align="center">12 单</td>
+						<td align="center">45 单</td>
+						<td align="center">10 单</td>
+						<td align="center">89 单</td>
+					</tr>
+					<tr>
+						<th align="center">提现申请</th>
+						<th align="center">在线商品</th>
+						<th align="center">&nbsp;</th>
+						<th align="center">&nbsp;</th>
+						<th align="center">&nbsp;</th>
+					</tr>
+					<tr>
+						<td align="center">35 笔<br /></td>
+						<td align="center">35 款</td>
+						<td align="center">&nbsp;</td>
+						<td align="center">&nbsp;</td>
+						<td align="center">&nbsp;</td>
+					</tr>
+				</tbody>
+				</table>
+    </div>
+{subskins footer}

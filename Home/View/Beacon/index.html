@@ -1,0 +1,283 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{:L('common_web_title')}</title>
+<link href="__PUBLIC__/res/css/base.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/style.css" rel="stylesheet" type="text/css" />
+<link href="__PUBLIC__/res/css/upload.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="__PUBLIC__/jscript/lan/cn.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/jquery.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/jscript/objs.js"></script>
+  <if condition="$default_map_dj == 2 ">
+    <script src="https://maps.googleapis.com/maps/api/js?key={:C('GOOGLE_AK')}" async defer></script>
+    <else />
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak={:C('BAIDU_AK')}"></script>
+  </if>
+<script type="text/javascript" src="__PUBLIC__/js/convertor.js"></script>
+<script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript">
+if (top.location == self.location) top.location.href = '/welcome~index.html';
+$(document).ready(function(e) {
+    var str=[];
+    str.push('<div class="editBar" style="position:absolute; right:0; bottom:-5px;">');
+    //str.push('<a href="javascript:void(0);" title="{:L("common_ALL_RETURN")}" onclick="Result();" class="iBack">{:L("common_ALL_RETURN")}</a>');
+    str.push('<a href="javascript:void(0);" title=">{:L("common_ALL_REFRESH")}" onclick="Refresh();" class="iRefresh">{:L("common_ALL_REFRESH")}</a></div>');
+    $('#bread').html(str.join(""));
+	//autoWindow();
+});
+function closePopupBox(){
+	$('#popup_window_content').html("&nbsp;");
+}
+function chkFrmSearch(){
+	if($('#keyword').val()==''){
+		return false;
+	}
+	return true;
+}
+var beaconID={$beacon_num};
+function addBeacon() {
+	var str=[];
+	str.push('<div class="showlist" id="beacons'+beaconID+'_box">');
+	str.push('<div style="float: left; padding-left:4px;">');
+	str.push('{:L("lb_form_beacom_title")}&nbsp;&nbsp;<input name="beacons['+beaconID+'][beaconID]" type="text" id="beacons_beaconID'+beaconID+'" size="6" maxlength="8" />');
+	str.push('</div><div style="float: left; padding-left:4px;">');
+	str.push('{:L("lb_form_beacom_name")}&nbsp;&nbsp;<input name="beacons['+beaconID+'][name]" type="text" id="beacons_name'+beaconID+'" size="12" />');
+	str.push('</div><div style="float: left; padding-left:4px;">');
+	str.push('{:L("lb_form_beacom_address")}&nbsp;&nbsp;');
+	str.push('<input type="text" id="beacons_address'+beaconID+'" style="vertical-align:middle;" name="beacons['+beaconID+'][address]" size="45" />');
+	str.push('<img src="__PUBLIC__/images/location_icon.png" style="vertical-align:middle;" onclick="getPoint('+beaconID+')" width="20" alt="">');
+	str.push('</div><div style="float: left; padding-left:4px;">');
+	str.push('{:L("lb_form_beacom_lat")}&nbsp;&nbsp;');
+	str.push('<input type="text" id="beacons_lat'+beaconID+'" name="beacons['+beaconID+'][lat]" size="8" readonly="readonly" />');
+	str.push('</div><div style="float: left; padding-left:4px; vertical-align:middle;">');
+	str.push('{:L("lb_form_beacom_lon")}&nbsp;&nbsp;');
+	str.push('<input type="text" id="beacons_lon'+beaconID+'" name="beacons['+beaconID+'][lon]" size="8" readonly="readonly" />');
+	str.push('</div><div style="float: right; width:60px;">');
+	str.push('<a class="add" style="height:20px;font-size: 12px;font-weight:200;line-height:20px;" href="javascript:delBeacon(\'beacons'+beaconID+'\');">{:L("lb_form_beacom_btn")}</a>');
+	str.push('</div></div>');
+	$('#beacons').append(str.join(''));
+	beaconID++;
+}
+function delBeacon(tagid){
+	$('#'+tagid+'_box').remove();
+}
+function mfSubmit(){
+	$.ajax({
+		cache: true,
+		type: "POST",
+		url:"{:U('Beacon/save')}",
+		data:$('#frmUserAdd').serialize(),// 你的formid
+		async: false,
+		error: function(request) {
+			alert("Connection error");
+		},
+		success: function(data) {
+			alert(data.info);
+		}
+	});	
+}
+</script>
+<include file="Public:commjs" />
+</head>
+
+<body scroll="no">
+<div id="wrap" class="videoList">
+<div class="crumbs mb5" id="bread" style="position:relative;"></div>
+<div class="edit">
+  <div class="editContent">
+    <form id="frmUserAdd" method="post">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="">
+            <tr>
+              <td><div class="showimg" id="add_beacons_box"> <a class="add" style="height:24px; line-height:22px;" href="javascript:addBeacon();"> + </a></div></td>
+            </tr>
+            <tr>
+              <td id="beacons">
+              <volist id="vo" name="beacon" key="k">
+              <div class="showlist" id="beacons{$k}_box">
+                <div style="float: left; padding-left:4px;">
+                {:L("lb_form_beacom_title")}&nbsp;&nbsp;<input name="beacons[{$k}][beaconID]" type="text" value="{$vo.beaconID}" id="beacons_beaconID{$k}" maxlength="8" size="6" />
+                </div><div style="float: left; padding-left:4px;">
+                {:L("lb_form_beacom_name")}&nbsp;&nbsp;<input name="beacons[{$k}][name]" type="text" value="{$vo.name}" id="beacons_name{$k}" size="12" />
+                </div><div style="float: left; padding-left:4px;">
+                {:L("lb_form_beacom_address")}&nbsp;&nbsp;<input type="text" id="beacons_address{$k}" name="beacons[{$k}][address]" value="{$vo.address}" style="vertical-align:middle;" size="45" />
+                <img src="__PUBLIC__/images/location_icon.png" style="vertical-align:middle;" onclick="getPoint({$k})" width="20" alt="" />
+                </div><div style="float: left; padding-left:4px;">
+                {:L("lb_form_beacom_lat")}&nbsp;&nbsp;<input type="text" id="beacons_lat{$k}" name="beacons[{$k}][lat]" value="{$vo.lat}" size="8" readonly />
+                </div><div style="float: left; padding-left:4px; vertical-align:middle;">
+                {:L("lb_form_beacom_lon")}&nbsp;&nbsp;<input type="text" id="beacons_lon{$k}" name="beacons[{$k}][lon]" value="{$vo.lon}" size="8" readonly />
+                </div><div style="float: right; width:60px;">
+                <a class="add" style="height:20px;font-size: 12px;font-weight:200;line-height:20px;" href="javascript:delBeacon('beacons{$k}');">{:L("lb_form_beacom_btn")}</a>
+                </div></div>
+                </volist>
+              </td>
+            </tr>
+             <tr>
+              <td>
+              <input type="button" value="{:L("lb_btn_enter")}" class="btnBlue" onClick="mfSubmit()" />
+              </td>
+            </tr>
+         </table>
+          </form>
+    </div>
+          </div>
+         </div>
+
+<div id="map_box" style="display:none;">
+  <div style="height:35px;line-height:35px;">
+    <div id="float_search_bar">
+      <label>Drang the marker to adjust the location</label>
+      <button onclick="return $('#map_box').hide(),false;">X</button>
+    </div>
+  </div>
+  <div id="preview">
+    <div id="map_container"></div>
+    <div id="result" style="margin-top: 13px;">LAT/LON
+      <input id="map" name="map" type="text" value="">
+      <input type="button" value="OK" onclick="setMap()">
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+var adds_num=0,pos,lon,lat;
+
+function Round(n, pos) {
+	var digits = Math.pow(10, pos);
+
+	var sign = 1;
+	if (n < 0) {
+		sign = -1;
+	}
+
+	n = n * sign;
+	var num = Math.round(n * digits) / digits;
+	num = num * sign;
+
+	return num.toFixed(pos);
+}
+
+initMap=function(){
+	var map = new BMap.Map("map_container");
+	map.enableScrollWheelZoom();
+	map.addControl(new BMap.NavigationControl());  //添加默认缩放平移控件钮
+	window.map=map;
+}
+initMap_google=function(){
+	var lat_tmp=37.392230;
+	var lon_tmp=126.969847;
+	var map_icon = "__PUBLIC__/images/location_icon.png";
+	var latlng = new google.maps.LatLng(lat_tmp, lon_tmp);
+	var options = {
+		zoom: 17,
+		center: latlng,
+		disableDefaultUI: true,
+		panControl: true,
+		zoomControl: true,
+		mapTypeControl: true,
+		scaleControl: true,
+		streetViewControl: false,
+		overviewMapControl: true,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	var map = new google.maps.Map(document.getElementById("map_container"), options);
+	map.setZoom(17);
+	map.setCenter(new google.maps.LatLng(lat_tmp, lon_tmp));
+	window.map=map;
+}
+initPoint=function(point){
+	map.clearOverlays();
+	map.centerAndZoom(point,15);
+	$("#map").val(point.lng + ", " + point.lat);
+}
+initMarket=function(point){
+	marker=new BMap.Marker(point);
+	marker.enableDragging();
+	map.addOverlay(marker);
+	marker.addEventListener("mouseup", function(e){
+		pos = this.getPosition();
+		BMap.Convertor.translate(new BMap.Point(pos.lng,pos.lat),0,function(point){
+			lon=Round(2*pos.lng-point.lng,7);
+			lat= Round(2*pos.lat-point.lat,7);
+
+			$("#map").val(lon + ", " + lat);
+		});
+	});
+}
+initSearch=function(str){
+	var myGeo = new BMap.Geocoder();
+	myGeo.getPoint(str, function(point){
+		if(point){
+			map.centerAndZoom(point, 15);
+			setTimeout(function(){initMarket(point)},500);
+		}else{
+			alert("Please input location!");
+		}
+	}, "中国");
+}
+initSearch_google=function(str){
+	var lat_tmp=37.392230;
+	var lon_tmp=126.969847;
+	var pos = new google.maps.LatLng(lat_tmp, lon_tmp);
+
+	var geocoder =  new google.maps.Geocoder();
+
+	geocoder.geocode({'address': str}, function(results, status) {
+		if (status === google.maps.GeocoderStatus.OK) {
+		  pos = results[0].geometry.location;
+		  map.setCenter(pos);
+		} else {
+		  alert('Geocode was not successful for the following reason: ' + status);
+		}
+
+		var marker = new google.maps.Marker({
+			map: map,
+			draggable: true,
+			position: pos
+		});
+
+		google.maps.event.addListener(marker, 'dragend', function(event) {
+			lon=Round(event.latLng.lng(),7);
+			lat= Round(event.latLng.lat(),7);
+			$("#map").val(lon + ", " + lat);
+		});
+	});
+
+/*
+	var myGeo = new BMap.Geocoder();
+	myGeo.getPoint(str, function(point){
+		if(point){
+			map.centerAndZoom(point, 15);
+			setTimeout(function(){initMarket(point)},500);
+		}else{
+			alert("您选择地址没有解析到结果!");
+		}
+	}, "中国");
+*/
+}
+setMap = function(){
+	$('#beacons_lat'+adds_num).val(lat);
+	$('#beacons_lon'+adds_num).val(lon);
+	window.map=map=null;
+	return $('#map_box').hide(),false;
+}
+getPoint = function(i){
+    if($("#beacons_address"+i).val().length<=0) return;
+	$('#map_box').show();
+	adds_num = i;
+
+	if ( {$default_map_dj}=='2' )
+	{
+		initMap_google();
+		initSearch_google($("#beacons_address"+i).val());
+	}
+	else
+	{
+		initMap();
+		initSearch($("#beacons_address"+i).val());
+	}
+}
+</script>
+
+</body>
+</html>

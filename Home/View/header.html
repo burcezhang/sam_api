@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>{:L('common_web_title')}</title>
+	<link href="css/base.css" rel="stylesheet" type="text/css" />
+	<link href="css/style.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="/jscript/lan/cn.js"></script>
+	<script type="text/javascript" src="/jscript/jquery.js"></script>
+	<script type="text/javascript" src="/jscript/common.js"></script>
+	<script type="text/javascript" src="/jscript/admin/objs.js"></script>
+    {$TPL_SCRIPT}
+    <script type="text/javascript">
+    document.domain="anycare-kr.com";
+	if (top.location == self.location) top.location.href = '/welcome~index.html';
+	TPL_SRC = '{$TPL_SRC_VIEW}';
+	$(document).ready(function(e) {
+       {$TPL_EVENT}
+		var str=[];
+		str.push('当前位置：<a href="javascript:void(0);" >首页</a> 》');
+		if(!$('#'+parent.bread.name).empty())str.push('<a href="javascript:void(0);">'+parent.bread.name+'</a> 》');
+		str.push('<a href="javascript:void(0);" class="cBlue">'+parent.bread.title+'</a>');
+		str.push('<span class="search">');
+		str.push('<form action="" method="get" class="forms" id="fm1">');
+		str.push('<div class="searchBar ml50 fl">');
+		str.push('<input type="text" placeholder="请输入要搜索的内容" name="sword" id="sword" value="{$sword}" class="keyword" />');
+		str.push('<input type="submit" value="搜&nbsp;索" class="btnSearch" />');
+		str.push('</div></form></span>');		
+		$('#bread').html(str.join(""));
+    });
+    </script>
+
+</head>
+<body>
+	<div id="wrap" class="videoList">
+		<div class="crumbs mb5" id="bread"></div>
