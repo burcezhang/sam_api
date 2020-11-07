@@ -48,7 +48,7 @@ class AgedController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 			break;
 			case 2:  //get detail
@@ -123,7 +123,7 @@ class AgedController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 			break;
 			case 3:  //update info
@@ -189,7 +189,7 @@ class AgedController extends AppapiController {
 				$jsonData['data']=$returnData;
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 			break;
 			case 4: //delete info
@@ -207,7 +207,7 @@ class AgedController extends AppapiController {
 				$jsonData['data']=$returnData;
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 			break;
 			case 5: //Updata background image

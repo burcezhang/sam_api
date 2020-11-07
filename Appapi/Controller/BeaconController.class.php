@@ -24,7 +24,7 @@ class BeaconController extends AppapiController {
 							//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 							return;	
 						}
@@ -46,7 +46,7 @@ class BeaconController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 				break;
 			case 2://查询
@@ -67,7 +67,7 @@ class BeaconController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 				break;
 			case 3://删除
@@ -96,7 +96,7 @@ class BeaconController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 				break;
 			case 4://修改
@@ -136,7 +136,7 @@ class BeaconController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 				break;
 		}

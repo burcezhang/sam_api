@@ -43,7 +43,7 @@ class FenceController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 			break;
 			case 2: //update
@@ -70,7 +70,7 @@ class FenceController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 			break;
 			case 3: //delete
@@ -91,7 +91,7 @@ class FenceController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 			break;
 			case 4: //addnew
@@ -137,7 +137,7 @@ class FenceController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 			break;
 			

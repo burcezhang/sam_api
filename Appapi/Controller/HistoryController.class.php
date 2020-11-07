@@ -36,7 +36,7 @@ class HistoryController extends AppapiController {
 				//echo json_encode($jsonData);
 				$result=json_encode($jsonData);
 				$callback=I('get.callback');  
-				echo $callback."($result)";   
+				echo $result;   
 
 			break;
 		}
