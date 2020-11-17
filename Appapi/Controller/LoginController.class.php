@@ -89,7 +89,7 @@ class LoginController extends AppapiController {
 						$smsData['body'] = sprintf($lang_vcode_sms,$data['vcode']);//$mArr['vcode'];
 						$smsData['act_type']='';
 						$smsData['act_obj']='Send login code!';
-						sendSMS($smsData);
+						sendSMS2($smsData);
 					}else{
 						$mArr=array();
 						$mArr['user_type']='WEBUSER';
@@ -116,7 +116,7 @@ class LoginController extends AppapiController {
 							$smsData['body'] = sprintf($lang_vcode_sms,$mArr['vcode']);//$mArr['vcode'];
 							$smsData['act_type']='';
 							$smsData['act_obj']='Send login code!';
-							sendSMS($smsData);
+							sendSMS2($smsData);
 						}else{
 							$returnData['error']=1;
 							$returnData['reason']='Error';
