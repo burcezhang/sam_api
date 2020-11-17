@@ -71,7 +71,7 @@ class LoginController extends AppapiController {
 				$lang_vcode_sms='Your current Anycare Password:% s (valid for 30 days), for your information secure, do not tell them the information to others.';
 				$account = I('get.account');
 				$returnData['error']=0;
-				if( preg_match('/^1[3,4,5,8][0-9]{9}/', $account) ){
+				if( preg_match('/^01[0,1,6,7,8,9][0-9]{7,8}/', $account) ){
 					$model = M('User_mas');
 					$datainfo = $model->where("account='$account'")->find();
 					if($datainfo){
