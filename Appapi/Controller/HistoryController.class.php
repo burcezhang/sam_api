@@ -39,6 +39,28 @@ class HistoryController extends AppapiController {
 				echo $result;   
 
 			break;
+			case 2:
+				$model = M('Protocol_data');
+				$elderly_id = (int)I('get.id');
+				$device_sn = M('Elderly_info')->where('id='.$elderly_id)->getField('device_sn');
+				$datainfo = $model->where("device_sn='$device_sn' and cmd_name='POSITION_TRACKING_ALERT_RPT'")->order('id asc')->find();
+				if($datainfo){
+					$body = "One Time Fix";
+					$smsData['phone']=I('get.account');
+					$smsData['body'] = sprintf($body);//$mArr['vcode'];
+					$smsData['act_type']='';
+					$smsData['act_obj']='One Time Fix';
+					sendSMS2($smsData);
+					$returnData['error']=0;
+					$returnData['reason']='Request One-Time-Fix Success';
+				}else{					
+					$returnData['error']=1;
+					$returnData['reason']='Failed';
+				}
+				$jsonData['data']=$returnData;
+				//echo json_encode($jsonData);
+				$result=json_encode($jsonData);
+				echo $result; 
 		}
 		
 	}
