@@ -83,12 +83,12 @@ function sendSMS2($smsData)
 	$sms = [];
 	$sms['user_id'] = "dranycare"; // SMS ID
 	$sms['key'] = "3ry10qgwaj4ufeppf3n7r7tq6p4xcfm3";//authentication key
+
 	$sms['msg'] = stripslashes($smsData['body']);
-	$sms['receiver'] = is_array($smsData['phone']) ? implode(',', $smsData['phone']) : $smsData['phone'];//收件人号码
-	$sms['destination'] = $sms['receiver'];
+	$sms['destination'] = $sms['receiver'] = is_array($smsData['phone']) ? implode(',', $smsData['phone']) : $smsData['phone'];//收件人号码
 	$sms['sender'] = '01052051478';//发送人号码
-	$sms['rdate'] = date('Ymd');//发送日期
-	$sms['rtime'] = date('Hi');//发送时间
+	//$sms['rdate'] = date('Ymd');//发送日期
+	//$sms['rtime'] = date('Hi');//发送时间
 	//
 	$sms['testmode_yn'] = empty($smsData['testmode_yn']) ? '' : $smsData['testmode_yn'];
 	//LMS, MMS 消息标题

@@ -50,7 +50,7 @@ class HistoryController extends AppapiController {
 					$smsData['body'] = sprintf($body);//$mArr['vcode'];
 					$smsData['act_type']='';
 					$smsData['act_obj']='One Time Fix';
-					sendSMS2($smsData);
+					sendSMS($smsData);
 					$returnData['error']=0;
 					$returnData['reason']='Request One-Time-Fix Success';
 				}else{					
